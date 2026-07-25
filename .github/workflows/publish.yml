@@ -1,0 +1,80 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"          # Triggered on every tag like v0.2.0, v1.0.0 etc.
+  workflow_dispatch:  # Allows manual dispatch (e.g. when no tag can be pushed).
+                      # skip-existing guards against double uploads.
+
+jobs:
+  build-and-publish:
+    name: Build and publish to PyPI
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/swiss-housing-mcp
+
+    permissions:
+      id-token: write   # Required for Trusted Publisher (OIDC)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: pip install hatch
+
+      - name: Build package
+        run: hatch build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # No 'with: password:' needed — Trusted Publisher handles auth.
+        with:
+          # Does not fail if a version already exists on PyPI (PyPI is
+          # immutable; a re-upload of the same version would otherwise fail
+          # with "400 File already exists").
+          skip-existing: true
+
+  publish-mcp:
+    name: Publish to MCP Registry
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # required for MCP Registry Trusted Publishing (OIDC)
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Sync server.json version to the release version
+        run: |
+          # On a tag run (v1.2.3) derive the version from the tag. On a manual
+          # workflow_dispatch from a branch, GITHUB_REF_NAME is the branch name
+          # (e.g. "main"), so stripping "v" would write the branch name into
+          # server.json and desync the MCP-registry version from the PyPI
+          # artifact. Fall back to the version already committed in server.json.
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="$(jq -r '.version' server.json)"
+          fi
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' \
+            server.json > server.tmp && mv server.tmp server.json
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        run: ./mcp-publisher publish

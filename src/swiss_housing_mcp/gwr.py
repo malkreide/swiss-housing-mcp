@@ -31,13 +31,39 @@ MADD_BASE = "https://public.madd.bfs.admin.ch"
 GEOADMIN_BASE = "https://api3.geo.admin.ch/rest/services/api"
 GWR_LAYER = "ch.bfs.gebaeude_wohnungs_register"
 
-CACHE_DIR = Path(os.environ.get("SWISS_HOUSING_CACHE", Path.home() / ".cache" / "swiss-housing-mcp"))
+CACHE_DIR = Path(
+    os.environ.get("SWISS_HOUSING_CACHE", Path.home() / ".cache" / "swiss-housing-mcp")
+)
 DUMP_TTL_HOURS = float(os.environ.get("SWISS_HOUSING_DUMP_TTL_HOURS", "24"))
 
 # Cantons with a public dump (lowercase two-letter codes as used by MADD).
 CANTONS = {
-    "zh", "be", "lu", "ur", "sz", "ow", "nw", "gl", "zg", "fr", "so", "bs", "bl",
-    "sh", "ar", "ai", "sg", "gr", "ag", "tg", "ti", "vd", "vs", "ne", "ge", "ju",
+    "zh",
+    "be",
+    "lu",
+    "ur",
+    "sz",
+    "ow",
+    "nw",
+    "gl",
+    "zg",
+    "fr",
+    "so",
+    "bs",
+    "bl",
+    "sh",
+    "ar",
+    "ai",
+    "sg",
+    "gr",
+    "ag",
+    "tg",
+    "ti",
+    "vd",
+    "vs",
+    "ne",
+    "ge",
+    "ju",
 }
 
 
@@ -78,7 +104,11 @@ class DumpInfo:
 def _write_and_extract(zip_path: Path, content: bytes, sqlite_path: Path) -> None:
     """Blocking IO isolated for asyncio.to_thread: write ZIP, extract data.sqlite."""
     zip_path.write_bytes(content)
-    with zipfile.ZipFile(zip_path) as zf, zf.open("data.sqlite") as src, open(sqlite_path, "wb") as dst:
+    with (
+        zipfile.ZipFile(zip_path) as zf,
+        zf.open("data.sqlite") as src,
+        open(sqlite_path, "wb") as dst,
+    ):
         while chunk := src.read(1 << 20):
             dst.write(chunk)
     zip_path.unlink(missing_ok=True)

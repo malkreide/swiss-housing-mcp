@@ -12,7 +12,10 @@ from .server import mcp
 def main() -> None:
     transport = os.environ.get("SWISS_HOUSING_TRANSPORT", "stdio")
     if transport in ("streamable-http", "sse"):
-        mcp.settings.host = os.environ.get("HOST", "0.0.0.0")
+        # Bind to loopback by default (SEC-016 / NeighborJack): the HTTP
+        # transports must not expose all interfaces unless a deployment
+        # explicitly opts in with HOST=0.0.0.0. stdio does not bind at all.
+        mcp.settings.host = os.environ.get("HOST", "127.0.0.1")
         mcp.settings.port = int(os.environ.get("PORT", "8000"))
     mcp.run(transport=transport)
 

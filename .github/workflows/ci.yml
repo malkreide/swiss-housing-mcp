@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Nightly live tests at 03:29 UTC to catch upstream schema drift.
+    - cron: "29 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]" --system
+
+      - name: Syntax check
+        run: python -m py_compile src/swiss_housing_mcp/server.py src/swiss_housing_mcp/gwr.py
+
+      - name: Import test
+        run: python -c "from swiss_housing_mcp.server import mcp; print('Import OK')"
+        env:
+          PYTHONPATH: src
+
+      - name: Unit tests (respx-mocked)
+        run: pytest -m "not live" -v
+        env:
+          PYTHONPATH: src
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      # Pin ruff so an upstream release cannot change the default rule set or
+      # formatter and break CI on unrelated, untouched code. Bump deliberately.
+      - run: pip install ruff==0.15.8
+
+      - run: ruff check src/ tests/
+
+      - run: ruff format --check src/
+
+  live:
+    # Only on the nightly schedule or manual dispatch — never on PR/push so the
+    # mainline build is not held hostage to upstream availability.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - run: pip install -e ".[dev]"
+
+      - name: Live tests against upstream
+        run: pytest tests/ -m live -v
+        env:
+          PYTHONPATH: src
+        timeout-minutes: 5

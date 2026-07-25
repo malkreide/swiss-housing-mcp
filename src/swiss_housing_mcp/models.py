@@ -22,11 +22,15 @@ class Envelope(BaseModel):
 
 class Building(BaseModel):
     egid: int
-    municipality_bfs: int | None = Field(default=None, description="GGDENR — BFS municipality number")
+    municipality_bfs: int | None = Field(
+        default=None, description="GGDENR — BFS municipality number"
+    )
     municipality: str | None = None
     canton: str | None = None
     address: str | None = None
-    status_code: int | None = Field(default=None, description="GSTAT (1001 planned … 1004 existing … 1007 demolished)")
+    status_code: int | None = Field(
+        default=None, description="GSTAT (1001 planned … 1004 existing … 1007 demolished)"
+    )
     status: str | None = None
     category_code: int | None = Field(default=None, description="GKAT")
     category: str | None = None
@@ -85,7 +89,9 @@ class NewConstructionResponse(Envelope):
     per_year: list[YearRow]
     total_dwellings: int
     total_dwellings_4plus_rooms: int
-    family_share_pct: float = Field(description="Share of 4+ room dwellings — proxy for family housing")
+    family_share_pct: float = Field(
+        description="Share of 4+ room dwellings — proxy for family housing"
+    )
 
 
 class PipelineRow(BaseModel):

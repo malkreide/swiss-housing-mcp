@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- **SEC-016 (0.0.0.0 binding / NeighborJack):** the HTTP transports defaulted
+  `HOST` to `0.0.0.0`, binding all interfaces. Now default to `127.0.0.1`;
+  exposing all interfaces requires an explicit `HOST=0.0.0.0`.
+
+### Added
+- Portfolio-standard repository files, aligning the repo with the sibling
+  `*-mcp` servers: `.github/workflows/ci.yml` (test/lint/live) and `publish.yml`
+  (OIDC PyPI + MCP Registry, tag-guarded version derivation),
+  `CONTRIBUTING.md`/`.de.md`, `SECURITY.md`/`.de.md`, `EXAMPLES.md`, and
+  `server.json` (MCP Registry manifest)
+
+### Changed
+- `pyproject.toml` aligned to portfolio standards: `requires-python >=3.11`,
+  `mcp[cli]` upper-bounded (`<2.0.0`), `testpaths`, and a `Changelog` project URL
+- `ruff format` applied to `src/` (formatting only, no behaviour change)
+
 ## [0.1.0] - 2026-07-24
 
 ### Added
