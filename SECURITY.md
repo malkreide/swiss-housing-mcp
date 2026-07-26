@@ -32,11 +32,15 @@ single-entity lookups.
 | Write | None — read-only register access; the spatial layer lives in `swiss-geodata-mcp` |
 | Tests | respx-mocked unit suite on every PR (3.11/3.12/3.13); live tests gated to a nightly job |
 
-> **Hardening & audit status:** a code-layer egress allow-list (`_assert_host_allowed`)
-> and a stderr-pinned logging setup — present in sibling servers such as
-> `swiss-geodata-mcp` and `swiss-snb-mcp` — are **follow-ups** here, as is the
-> formal MCP best-practice audit (`audits/` scorecard). This section will be
-> updated to reference the audit report once it is run.
+> **Hardening & audit status:** the formal MCP best-practice audit has been run —
+> see [`audits/2026-07-26T094901-Z-swiss-housing-mcp/`](audits/2026-07-26T094901-Z-swiss-housing-mcp/)
+> (skill v1.0.0, 32 applicable checks). Scorecard: **11 pass / 21 partial / 0 fail**,
+> **production-ready: yes** (no critical/high failures). The partials are hardening
+> follow-ups, not blockers: a code-layer egress allow-list (`assert_host_allowed`,
+> SEC-021), an explicit stderr-pinned logging setup (OBS-004), `mask_error_details`
+> (OBS-002), and tool-input value constraints (SEC-018) are present in sibling
+> servers such as `swiss-geodata-mcp` and `swiss-snb-mcp` and are tracked here as
+> open findings in the audit run above.
 
 ## Accepted risks
 

@@ -1,0 +1,370 @@
+{
+  "audit_meta": {
+    "server_name": "swiss-housing-mcp",
+    "run_id": "2026-07-26T094901-Z-swiss-housing-mcp",
+    "skill_version": "1.0.0",
+    "policy": "fail-or-partial"
+  },
+  "results": {
+    "ARCH-001": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_housing_mcp/server.py:75-76 — tool `lookup_building` uses consistent snake_case",
+        "src/swiss_housing_mcp/server.py:108,138,170,224,267,310,352,381 — all 9 tool names snake_case, no spaces/dots/special chars; multi-sentence docstrings give use-case context (e.g. server.py:177-179 family-housing proxy)"
+      ],
+      "gaps": []
+    },
+    "ARCH-002": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_housing_mcp/server.py:76-81 — descriptions are multi-sentence (>100 chars) with prose use-case framing",
+        "src/swiss_housing_mcp/server.py:225-232 — construction_pipeline docstring differentiates GSTAT status codes"
+      ],
+      "gaps": [
+        "No structured <use_case>/<important_notes>/<example> tags (or equivalent) in any tool description; use-case is prose-only"
+      ]
+    },
+    "ARCH-003": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_housing_mcp/server.py:84-85 — unknown EGID returns structured BuildingResponse(found=False), not bare []/None",
+        "src/swiss_housing_mcp/server.py:381-396 — dump_status always returns an evaluable status with a note (graceful degradation)"
+      ],
+      "gaps": [
+        "No fuzzy-match / suggestion fallback and no match_type field on empty results; a miss returns found=False with no actionable hint"
+      ]
+    },
+    "ARCH-004": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_housing_mcp/server.py:75-105 — handlers take only typed args + internal httpx; no request/stdin/stdout access (transport-agnostic)",
+        "src/swiss_housing_mcp/__main__.py:12-20 — dual transport (stdio | streamable-http | sse) selectable via SWISS_HOUSING_TRANSPORT"
+      ],
+      "gaps": [
+        "Configuration read via scattered os.environ.get (gwr.py:34-37, __main__.py:13-19), not a Pydantic BaseSettings object; no shared lifespan — httpx client is created per-call in server.py:54-55"
+      ]
+    },
+    "ARCH-005": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_housing_mcp/gwr.py:30-37 — only public URLs/config; grep for api_key/token/secret/password/Bearer across src/ returns no matches",
+        ".gitignore:11 — .env is git-ignored"
+      ],
+      "gaps": [
+        "Minor hardening gap: no CI secret-scan (gitleaks/trufflehog) workflow — low impact as the server holds no secrets (public open data, no auth)"
+      ]
+    },
+    "ARCH-006": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_housing_mcp/server.py — 9 use-case-driven tools (<=12 budget), no 1:1 CRUD/REST mapping",
+        "README.md:16-22 — anchor demo query answerable in 2 calls: new_construction (server.py:170) + construction_pipeline (server.py:224)"
+      ],
+      "gaps": []
+    },
+    "ARCH-007": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_housing_mcp/server.py:183-221 — new_construction aggregates building+dwelling JOIN internally and returns a complete envelope (per-year rows + totals + family_share_pct), not an ID pointer",
+        "src/swiss_housing_mcp/server.py:237-264 — construction_pipeline internally loops GSTAT 1001/1002/1003 and returns a self-contained breakdown"
+      ],
+      "gaps": []
+    },
+    "ARCH-008": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "grep @mcp.resource/@mcp.prompt across src/ — no matches (tools-only)",
+        "README.md / README.de.md — grep primitive/resource/prompt returns no matches"
+      ],
+      "gaps": [
+        "Only the Tools primitive is used; no Resources or Prompts, and README carries no documented justification for the tools-only choice (ARCH-008 requires a second primitive OR a documented rationale). Read-only lookups like dump_status/explain_code are Resource candidates."
+      ]
+    },
+    "ARCH-009": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_housing_mcp/server.py:75,108 — lookup_building & address_to_egid set readOnlyHint:True + openWorldHint:True (correct: live API)",
+        "src/swiss_housing_mcp/server.py:138,170,224,267,310,352,381 — all tools carry explicit annotations; readOnlyHint:True is consistent (server is fully read-only)"
+      ],
+      "gaps": [
+        "openWorldHint omitted on the 7 dump-fetching tools (lookup_dwellings, new_construction, construction_pipeline, buildings_in_bbox, municipality_housing_stats, explain_code) even though ensure_dump downloads from public.madd.bfs.admin.ch (gwr.py:142); no idempotentHint anywhere; no annotations table in README/docs"
+      ]
+    },
+    "ARCH-011": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_housing_mcp/ src-layout; pyproject.toml:46-47 declares packages=[\"src/swiss_housing_mcp\"]",
+        "README.md, README.de.md (parallel sections), CHANGELOG.md, LICENSE, pyproject.toml, tests/, .github/workflows/ci.yml + publish.yml all present"
+      ],
+      "gaps": [
+        "Minor: 9 tools all live in server.py (396 lines), exceeding the <200-line guideline; a tools/ package split would be cleaner"
+      ]
+    },
+    "ARCH-012": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "CHANGELOG.md:1-6 — present, Keep-a-Changelog + SemVer format",
+        "CHANGELOG.md Unreleased/Security — documents SEC-016 change"
+      ],
+      "gaps": [
+        "MCP protocolVersion is not pinned in code (grep protocol_version/protocolVersion across src/ and server.json returns none — SDK default is used); no README 'MCP Protocol Version' / update-policy section; no dependabot.yml / renovate.json for SDK-update discipline"
+      ]
+    },
+    "CH-004": {
+      "status": "pass",
+      "category": "CH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_housing_mcp/models.py:9-13 — ATTRIBUTION string names dataset (GWR/RegBL, BFS), OGD terms and source hosts",
+        "src/swiss_housing_mcp/models.py:18-20 — Envelope.source is attached to every response; README.md License + Credits sections document sources/licenses"
+      ],
+      "gaps": []
+    },
+    "OBS-001": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "high",
+      "evidence": [
+        "tests/test_server.py:123-127 — execution-error path tested (unknown canton -> ValueError)",
+        "tests/test_server.py:99-118 — 4xx no-retry and network-error paths tested; FastMCP converts raised exceptions to isError tool results by default"
+      ],
+      "gaps": [
+        "Reliance on FastMCP's implicit exception->isError conversion; tool handlers do not explicitly catch/classify app errors, and there is no protocol-error (wrong tool / bad args) test"
+      ]
+    },
+    "OBS-002": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "high",
+      "evidence": [
+        "grep mask_error_details across src/ — no match; FastMCP(\"swiss-housing-mcp\") in server.py:36 uses the default (details not masked)",
+        "src/swiss_housing_mcp/gwr.py:86 — RuntimeError(f\"Upstream unreachable after retries: {last_error}\") embeds the upstream exception string, which reaches the tool result"
+      ],
+      "gaps": [
+        "mask_error_details is not enabled; upstream/sqlite exception strings (gwr.py:86, gwr.py:153) can surface in tool results. No stacktrace/SQL dumped, but no sanitization layer either"
+      ]
+    },
+    "OBS-003": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "medium",
+      "evidence": [
+        "grep structlog/loguru/logging across src/ — no logging framework; grep print( — none (no stdout noise)",
+        "SECURITY.md:53-56 — structured logging explicitly recorded as an accepted risk for the stdio profile"
+      ],
+      "gaps": [
+        "No structured logger, no severity levels, no per-call bound context; deliberate for stdio-first but not yet implemented"
+      ]
+    },
+    "OBS-004": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "critical",
+      "evidence": [
+        "grep print( / console.log across src/ — none; no writes to stdout, so the JSON-RPC stream is not polluted (the core OBS-004 risk is avoided)"
+      ],
+      "gaps": [
+        "No explicit stderr-pinned logging configuration (no logging.basicConfig(stream=sys.stderr) / WriteLoggerFactory); safety currently rests on the absence of any logging rather than an enforced stderr sink"
+      ]
+    },
+    "OPS-001": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "tests/test_server.py:38-46 — respx-mocked unit test; pyproject.toml:52-54 registers the `live` marker",
+        ".github/workflows/ci.yml:42-46 — CI runs pytest -m \"not live\"; ci.yml:64-82 — separate nightly/dispatch live job"
+      ],
+      "gaps": [
+        "Coverage is thin: 7 unit + 2 live tests for 9 tools; tests exercise the gwr client layer only — the 9 @mcp.tool handlers are not directly tested (well below the >=5 unit / >=1 live per-tool bar)"
+      ]
+    },
+    "OPS-002": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "medium",
+      "evidence": [
+        "README.md:16,75,57,105,133,145 — Anchor Demo, Installation, Features(Tools), Configuration, Known Limitations (5 limits), License present; README.de.md mirrors the section inventory",
+        "CHANGELOG.md present (Keep-a-Changelog); CONTRIBUTING.md + CONTRIBUTING.de.md present (bilingual)"
+      ],
+      "gaps": [
+        "No dedicated Security section in README (security lives in a separate SECURITY.md); no ASCII/Mermaid architecture data-flow diagram — README.md:120 'Project Structure' is a file tree, not an architecture diagram"
+      ]
+    },
+    "OPS-003": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "README.md:73 — 'Phase 1 is authentication-free' and README.md:38 references Phase-1 tools; all tools are readOnlyHint:True, consistent with a read-only Phase 1"
+      ],
+      "gaps": [
+        "Phase is only referenced in prose, not declared as an explicit Phase 1/2/3 section; no roadmap file and no documented phase-transition prerequisites (audit/ISDS/DSG gates)"
+      ]
+    },
+    "SCALE-002": {
+      "status": "partial",
+      "category": "SCALE",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_housing_mcp/__main__.py:12-20 — streamable-http/sse transports exist (dual); profile is_cloud_deployed=false, deployment=local-stdio"
+      ],
+      "gaps": [
+        "No sticky-session / shared-state (Redis/Durable-Objects) session manager and no defined session TTL for the HTTP/SSE transports; latent gap since HTTP is an opt-in, single-instance path today"
+      ]
+    },
+    "SEC-004": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_housing_mcp/gwr.py:30-31 — outbound hosts are hardcoded HTTPS constants (MADD_BASE, GEOADMIN_BASE); user input flows only into query params (gwr.py:186-203), not the host, so SSRF surface is minimal"
+      ],
+      "gaps": [
+        "No explicit https-scheme validation, no resolved-IP blocklist (private/link-local/loopback), and no block of cloud-metadata IP 169.254.169.254 before outbound requests. Low residual risk given fixed hosts, but the control is absent"
+      ]
+    },
+    "SEC-005": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_housing_mcp/gwr.py:70-86 — one httpx GET per request against fixed public hosts (no user-controlled hostname)"
+      ],
+      "gaps": [
+        "No DNS pinning / single-resolution guard against TOCTOU rebinding. Low residual risk (hosts are fixed public BFS/geo.admin.ch endpoints), but no code-layer protection"
+      ]
+    },
+    "SEC-006": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_housing_mcp/__main__.py:13 — transport defaults to 'stdio'; HTTP/SSE only when SWISS_HOUSING_TRANSPORT is set to streamable-http/sse (no TCP port bound by default)",
+        "README.md:105-111 — local stdio use-case is primary; cloud transport documented separately"
+      ],
+      "gaps": []
+    },
+    "SEC-007": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "No Dockerfile in the repo (find . -name Dockerfile — none)",
+        "SECURITY.md:45-51 — container sandboxing recorded as an accepted risk for the local-stdio public-data profile"
+      ],
+      "gaps": [
+        "No container hardening artifacts (non-root USER, read-only FS, dropped caps, seccomp); accepted for local-stdio but must be revisited on a cloud move"
+      ]
+    },
+    "SEC-008": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "medium",
+      "evidence": [
+        ".github/workflows/publish.yml — permissions id-token:write, pypa/gh-action-pypi-publish with no stored password (OIDC Trusted Publisher + Sigstore attestation)",
+        "README.md:75-82 — full, transparent install command; no pre/postinstall hooks in pyproject.toml; CONTRIBUTING.md documents build"
+      ],
+      "gaps": []
+    },
+    "SEC-009": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "profile auth_model=none; server.py:36 FastMCP(...) with no custom session code — session-id handling for the HTTP transport is delegated to the FastMCP SDK default"
+      ],
+      "gaps": [
+        "No code-layer cryptographic user<->session binding. Mitigating: there is no auth model and no per-user data (anonymous, read-only, public open data), and HTTP is an opt-in transport; but no explicit session-id entropy/TTL/invalidation is asserted in code"
+      ]
+    },
+    "SEC-013": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_housing_mcp/gwr.py — no API keys/credentials anywhere; the GWR/RegBL sources are public and unauthenticated (gwr.py:7 'No authentication required')",
+        "SECURITY.md:31 — Secrets row documents that there are no keys/credentials to store (Public Open Data, Stufe-1 acceptable and recorded)"
+      ],
+      "gaps": [
+        "Secret-management note lives in SECURITY.md rather than a dedicated docs/secret-management.md — immaterial as no secrets exist"
+      ]
+    },
+    "SEC-016": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_housing_mcp/__main__.py:18 — mcp.settings.host = os.environ.get(\"HOST\", \"127.0.0.1\") — loopback default, 0.0.0.0 requires an explicit opt-in",
+        "CHANGELOG.md Unreleased/Security — records the fix from a former 0.0.0.0 default to 127.0.0.1"
+      ],
+      "gaps": []
+    },
+    "SEC-018": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_housing_mcp/models.py — Pydantic v2 response models; tool inputs are type-hinted (server.py:76 egid:int, server.py:109 limit:int) so FastMCP applies type-level schema validation",
+        "src/swiss_housing_mcp/gwr.py:130-131 — canton value is whitelist-checked against CANTONS"
+      ],
+      "gaps": [
+        "Tool-input fields carry no value constraints: no ge/le on numeric args (egid, municipality_bfs, since_year, limit, LV95 bounds), no min/max_length on the address string, and no strict=True / extra=forbid. README claims range-checked EGID/coordinates, but the code does not enforce it at the tool boundary"
+      ]
+    },
+    "SEC-019": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_housing_mcp/server.py — all tools are read-only; outbound egress is confined to fixed BFS/geo.admin.ch hosts (gwr.py:30-31) with no arbitrary send/exfiltration path, and data is public — so the server holds at most 2 of the 3 trifecta capabilities",
+        "SECURITY.md:32 — documents the no-write / read-only posture"
+      ],
+      "gaps": [
+        "No explicit lethal-trifecta assessment / ADR in README or docs/. The structural safety (<=2 capabilities) holds, but it is not documented as an assessed decision"
+      ]
+    },
+    "SEC-020": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "grep for os.system|subprocess|shell=True|eval(|exec(|os.popen across src/ — no matches; all data access is via sqlite3 parametrized queries (gwr.py:157) and httpx"
+      ],
+      "gaps": []
+    },
+    "SEC-021": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_housing_mcp/gwr.py:30-31 — egress targets are hardcoded module constants (MADD_BASE, GEOADMIN_BASE), a mitigating factor that limits outbound destinations"
+      ],
+      "gaps": [
+        "No code-layer egress allow-list: no frozenset of allowed hosts and no assert_host_allowed()-style pre-request check before outbound calls (gwr.py:77,142,190,202); no docs/network-egress.md"
+      ]
+    }
+  }
+}

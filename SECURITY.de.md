@@ -32,12 +32,15 @@ Einzelabfragen.
 | Schreiben | Keines — rein lesender Registerzugriff; die Raum-Schicht liegt in `swiss-geodata-mcp` |
 | Tests | respx-mockierte Unit-Suite bei jedem PR (3.11/3.12/3.13); Live-Tests auf einen Nightly-Job beschränkt |
 
-> **Härtungs- & Audit-Status:** Eine Egress-Allow-List auf Code-Ebene
-> (`_assert_host_allowed`) und ein auf stderr fixiertes Logging — in
-> Geschwister-Servern wie `swiss-geodata-mcp` und `swiss-snb-mcp` vorhanden —
-> sind hier **Follow-ups**, ebenso das formale MCP-Best-Practice-Audit
-> (`audits/`-Scorecard). Dieser Abschnitt verweist auf den Audit-Bericht, sobald
-> er vorliegt.
+> **Härtungs- & Audit-Status:** Das formale MCP-Best-Practice-Audit wurde
+> durchgeführt — siehe [`audits/2026-07-26T094901-Z-swiss-housing-mcp/`](audits/2026-07-26T094901-Z-swiss-housing-mcp/)
+> (Skill v1.0.0, 32 anwendbare Checks). Scorecard: **11 pass / 21 partial / 0 fail**,
+> **production-ready: ja** (keine Critical-/High-Fails). Die Partials sind
+> Härtungs-Follow-ups, keine Blocker: eine Egress-Allow-List auf Code-Ebene
+> (`assert_host_allowed`, SEC-021), ein auf stderr fixiertes Logging (OBS-004),
+> `mask_error_details` (OBS-002) und Wertebereichs-Constraints auf Tool-Inputs
+> (SEC-018) sind in Geschwister-Servern wie `swiss-geodata-mcp` und `swiss-snb-mcp`
+> vorhanden und werden hier als offene Findings im obigen Audit-Run geführt.
 
 ## Akzeptierte Risiken
 

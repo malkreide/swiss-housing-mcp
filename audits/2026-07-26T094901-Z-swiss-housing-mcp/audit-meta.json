@@ -1,0 +1,13 @@
+{
+  "audit_meta": {
+    "server_name": "swiss-housing-mcp",
+    "run_id": "2026-07-26T094901-Z-swiss-housing-mcp",
+    "started_at": "2026-07-26T09:49:01.500725+00:00",
+    "timezone_offset": "Z",
+    "skill_version": "1.0.0",
+    "output_dir": "/workspace/audit-swiss-housing-mcp/audits/2026-07-26T094901-Z-swiss-housing-mcp",
+    "catalog_hash": "091f446b27965044ce658a1d5f4b2cabe2b0ab5661dcc1a53b6be8f1f2e093c0",
+    "catalog_dir": "/root/.claude/skills/mcp-audit/checks"
+  },
+  "agent_runs": []
+}
