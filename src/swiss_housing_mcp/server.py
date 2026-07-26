@@ -199,7 +199,9 @@ async def new_construction(
     )
     per_year = [
         YearRow(
-            year=r["year"], buildings=r["buildings"], dwellings=r["dwellings"],
+            year=r["year"],
+            buildings=r["buildings"],
+            dwellings=r["dwellings"],
             dwellings_4plus_rooms=r["d4"] or 0,
         )
         for r in rows
@@ -245,8 +247,10 @@ async def construction_pipeline(
         )[0]
         pipeline.append(
             PipelineRow(
-                status=GSTAT_LABELS[gstat], status_code=gstat,
-                buildings=r["buildings"], dwellings=r["dwellings"],
+                status=GSTAT_LABELS[gstat],
+                status_code=gstat,
+                buildings=r["buildings"],
+                dwellings=r["dwellings"],
             )
         )
     name_rows = store.query(
@@ -262,8 +266,12 @@ async def construction_pipeline(
 
 @mcp.tool(annotations={"readOnlyHint": True})
 async def buildings_in_bbox(
-    e_min: float, n_min: float, e_max: float, n_max: float,
-    canton: str = "zh", since_year: int | None = None,
+    e_min: float,
+    n_min: float,
+    e_max: float,
+    n_max: float,
+    canton: str = "zh",
+    since_year: int | None = None,
 ) -> BBoxStatsResponse:
     """Aggregate buildings/dwellings inside an LV95 bounding box.
 
@@ -359,8 +367,11 @@ async def explain_code(attribute: str, code: int, canton: str = "zh") -> CodeRes
         provenance="daily_dump",
         explanations=[
             CodeExplanation(
-                attribute=r["CMERKM"], code=int(r["CECODID"]),
-                label_de=r["CODTXTLD"], label_fr=r["CODTXTLF"], label_it=r["CODTXTLI"],
+                attribute=r["CMERKM"],
+                code=int(r["CECODID"]),
+                label_de=r["CODTXTLD"],
+                label_fr=r["CODTXTLF"],
+                label_it=r["CODTXTLI"],
             )
             for r in rows
         ],
