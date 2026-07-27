@@ -19,6 +19,10 @@
 
 Verifiziert gegen den Live-Dump am 24.07.2026: **16'164 neue Wohnungen** seit 2020 (27.4% mit 4+ Zimmern — der Familienwohnungs-Proxy) und **7'287 Wohnungen aktuell im Bau**. Wohnungen im Bau heute sind Haushalte in 1–3 Jahren: der Frühindikator für die Schulraumplanung.
 
+### Demo
+
+![Demo: Claude nutzt new_construction und construction_pipeline](docs/assets/demo.svg)
+
 ---
 
 ## Übersicht
@@ -141,6 +145,17 @@ swiss-housing-mcp/
 ## Changelog
 
 Siehe [CHANGELOG.md](CHANGELOG.md)
+
+## Mitwirken
+
+Beiträge sind willkommen — siehe [CONTRIBUTING.de.md](CONTRIBUTING.de.md) ([English](CONTRIBUTING.md)).
+
+## Sicherheit
+
+Rein lesend, keine Personendaten, keine Authentifizierung — ein öffentliches
+Bundesregister über einen festen Satz von Endpoints. Siehe
+[SECURITY.de.md](SECURITY.de.md) ([English](SECURITY.md)) für die vollständige
+Sicherheitslage und die Meldung von Schwachstellen.
 
 ## Lizenz
 

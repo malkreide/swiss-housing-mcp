@@ -19,6 +19,10 @@
 
 Verified against the live dump on 2026-07-24: **16'164 new dwellings** since 2020 (27.4% with 4+ rooms — the family-housing proxy), and **7'287 dwellings currently under construction**. Dwellings under construction today are households in 1–3 years: the early indicator for school-space planning.
 
+### Demo
+
+![Demo: Claude using new_construction and construction_pipeline](docs/assets/demo.svg)
+
 ---
 
 ## Overview
@@ -141,6 +145,16 @@ swiss-housing-mcp/
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md)
+
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) ([Deutsch](CONTRIBUTING.de.md)).
+
+## Security
+
+Read-only, no PII, no authentication — a public federal register accessed through
+a fixed set of endpoints. See [SECURITY.md](SECURITY.md) ([Deutsch](SECURITY.de.md))
+for the full posture and how to report a vulnerability.
 
 ## License
 
