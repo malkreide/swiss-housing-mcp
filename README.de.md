@@ -161,11 +161,12 @@ Sicherheitslage und die Meldung von Schwachstellen.
 
 MIT License — siehe [LICENSE](LICENSE). Daten: GWR/RegBL, Bundesamt für Statistik (BFS), Open Government Data mit Quellenangabe.
 
+## Autor
+
+**Hayal Oezkan** · [github.com/malkreide](https://github.com/malkreide)
+
 ## Credits & Verwandte Projekte
 
 - Daten: [Bundesamt für Statistik — GWR/RegBL](https://www.housing-stat.ch/), [geo.admin.ch](https://api3.geo.admin.ch/)
 - Portfolio-Geschwister: [`swiss-statistics-mcp`](https://github.com/malkreide/swiss-statistics-mcp) (Indizes, STAT-TAB), [`zurich-opendata-mcp`](https://github.com/malkreide/zurich-opendata-mcp) (städtische Daten)
 
-## Autor
-
-malkreide · [GitHub](https://github.com/malkreide)
