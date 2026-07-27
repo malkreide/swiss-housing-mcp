@@ -154,3 +154,5 @@ MIT License — see [LICENSE](LICENSE). Data: GWR/RegBL, Swiss Federal Statistic
 ## Author
 
 malkreide · [GitHub](https://github.com/malkreide)
+
+<!-- mcp-name: io.github.malkreide/swiss-housing-mcp -->
