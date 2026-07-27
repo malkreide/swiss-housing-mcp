@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **MCP Registry publish blockers**, both caught before the first release:
+  - `server.json` `description` was 172 characters; the registry rejects
+    anything over 100 with a `422`. Shortened to 97, keeping the official
+    register name, the `GWR/RegBL` identifiers and the `EGID`/`EWID` lookup
+    keys.
+  - The registry verifies ownership of a PyPI package via an
+    `mcp-name: <server-name>` marker in the published package README; it was
+    missing. Added as an HTML comment at the end of `README.md` (the package
+    `long_description`), matching the placement used by the sibling servers.
+
+  Because this server has not been published yet, both fixes land before the
+  first release and need no version bump.
+
 ### Security
 - **SEC-016 (0.0.0.0 binding / NeighborJack):** the HTTP transports defaulted
   `HOST` to `0.0.0.0`, binding all interfaces. Now default to `127.0.0.1`;
