@@ -160,13 +160,14 @@ for the full posture and how to report a vulnerability.
 
 MIT License — see [LICENSE](LICENSE). Data: GWR/RegBL, Swiss Federal Statistical Office (BFS), open government data with attribution.
 
+## Author
+
+**Hayal Oezkan** · [github.com/malkreide](https://github.com/malkreide)
+
 ## Credits & Related Projects
 
 - Data: [Federal Statistical Office — GWR/RegBL](https://www.housing-stat.ch/), [geo.admin.ch](https://api3.geo.admin.ch/)
 - Portfolio siblings: [`swiss-statistics-mcp`](https://github.com/malkreide/swiss-statistics-mcp) (indices, STAT-TAB), [`zurich-opendata-mcp`](https://github.com/malkreide/zurich-opendata-mcp) (city-level data)
 
-## Author
-
-malkreide · [GitHub](https://github.com/malkreide)
 
 <!-- mcp-name: io.github.malkreide/swiss-housing-mcp -->
