@@ -15,8 +15,15 @@ def main() -> None:
         # Bind to loopback by default (SEC-016 / NeighborJack): the HTTP
         # transports must not expose all interfaces unless a deployment
         # explicitly opts in with HOST=0.0.0.0. stdio does not bind at all.
-        mcp.settings.host = os.environ.get("HOST", "127.0.0.1")
-        mcp.settings.port = int(os.environ.get("PORT", "8000"))
+        #
+        # mcp 2.x: host/port are run() kwargs, and stdio does not accept them,
+        # hence the split call rather than a conditional kwarg dict.
+        mcp.run(
+            transport=transport,
+            host=os.environ.get("HOST", "127.0.0.1"),
+            port=int(os.environ.get("PORT", "8000")),
+        )
+        return
     mcp.run(transport=transport)
 
 

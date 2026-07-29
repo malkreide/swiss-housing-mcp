@@ -12,7 +12,7 @@ City of Zurich (27.4% with 4+ rooms), 7'287 dwellings currently under constructi
 from __future__ import annotations
 
 import httpx
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from . import gwr
 from .models import (
@@ -33,7 +33,7 @@ from .models import (
     YearRow,
 )
 
-mcp = FastMCP("swiss-housing-mcp")
+mcp = MCPServer("swiss-housing-mcp")
 store = gwr.GwrStore()
 
 GSTAT_LABELS = {
