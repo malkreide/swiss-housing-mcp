@@ -8,6 +8,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **`fetch_with_retry` had six defects, all inherited from the shared
+  template.** `gwr.py` copied the `mcp-data-source-probe` reference retry, and
+  the template shipped these until 2026-08-07. A sweep across eleven servers
+  found that none read `Retry-After` and none jittered — one template, eleven
+  copies, not eleven independent omissions.
+  1. **No jitter.** `2 ** attempt` is deterministic, so every client that hit
+     the same outage retried in lockstep and returned as a wave exactly when
+     the source recovered. Now spread into `[0.5x, 1.5x]`.
+  2. **`Retry-After` was never read.** A 429 or 503 answers the very question
+     the backoff curve guesses at. Both RFC 9110 §10.2.3 forms are now read
+     (delta-seconds and HTTP-date); an unparseable header yields `None` and
+     falls back to the curve — it must never crash on the error path. The
+     jitter on top is one-sided `[1.0x, 1.25x]`: the source said *when*, so
+     later is polite and earlier ignores the value just read.
+  3. **No cap on a single wait**, and the cap is now applied *after* the
+     jitter. `min(cap, base) * jitter` and `min(cap, base * jitter)` both
+     contain a cap and a jitter; only the second is bounded — 20s times 1.5 is
+     30s.
+  4. **The budget counted attempts, not seconds.** Four attempts against an
+     upstream that takes 30s to time out is two minutes inside one tool call.
+     Now 25s for the whole call, anchored on the MCP SDK's
+     `MCP_DEFAULT_TIMEOUT = 30.0`.
+  5. **Nothing held that budget.** It is now an `asyncio.timeout` wall-clock
+     deadline, not an httpx timeout: httpx bounds each *operation*, and its
+     read timeout restarts with every chunk, so a slowly trickling response
+     outlived the budget without any single read expiring.
+  6. **The error was wrapped.** `raise RuntimeError(f"Upstream unreachable
+     after retries: {last_error}")` — and `httpx.ConnectTimeout`, `ReadTimeout`
+     and `ConnectError` all carry an **empty** `str()`. Those are the only
+     errors a real outage produces, so the message stopped at the colon,
+     naming neither the failure mode nor the host. The original exception is
+     now re-raised: callers keep the type and `.response`. The one case with no
+     original — budget spent before a request went out — raises the named
+     `UpstreamUnavailableError` rather than a bare `RuntimeError` that a caller
+     cannot tell apart from a bug in this server.
+
+  **A test pinned the defect.** `test_network_error_raises_runtime_error`
+  asserted `RuntimeError, match="Upstream unreachable"`, so the wrapper could
+  not be removed without it going red. Its mock passed `"boom"` as the message,
+  which is exactly what made it misleading — informative in the test, blank in
+  production. It now asserts that the original exception type travels out, and
+  a second test covers the empty-`str()` case directly. Three further tests
+  cover `Retry-After` (both forms plus the refusal cases), the jitter spread,
+  and that the cap binds after jittering.
+
 - **MCP Registry publish blockers**, both caught before the first release:
   - `server.json` `description` was 172 characters; the registry rejects
     anything over 100 with a `422`. Shortened to 97, keeping the official

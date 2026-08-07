@@ -5,6 +5,9 @@ Run from project root: PYTHONPATH=src pytest tests/ -m "not live"
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
+from email.utils import format_datetime
+
 import httpx
 import pytest
 import respx
@@ -109,12 +112,95 @@ async def test_no_retry_on_404(monkeypatch):
 
 
 @respx.mock
-async def test_network_error_raises_runtime_error(monkeypatch):
+async def test_network_error_surfaces_the_original_exception(monkeypatch):
+    """The transport error travels out unwrapped, with its type intact.
+
+    This test used to assert ``RuntimeError, match="Upstream unreachable"`` and
+    so pinned the very defect it was meant to cover. ``httpx.ConnectError``,
+    ``ConnectTimeout`` and ``ReadTimeout`` all carry an EMPTY ``str()`` in the
+    real world — the wrapper interpolated that emptiness and produced a message
+    that stopped at the colon, naming neither the failure mode nor the host.
+    The mock passes ``"boom"`` here, which is exactly why asserting on the
+    message was misleading: it looked informative in the test and was blank in
+    production.
+    """
     monkeypatch.setattr(gwr.asyncio, "sleep", _instant_sleep)
     respx.get(url__startswith=FIND_URL).mock(side_effect=httpx.ConnectError("boom"))
     async with httpx.AsyncClient() as http:
-        with pytest.raises(RuntimeError, match="Upstream unreachable"):
+        with pytest.raises(httpx.ConnectError):
             await gwr.geoadmin_find_egid(http, 302031642)
+
+
+@respx.mock
+async def test_empty_str_error_still_names_its_type(monkeypatch):
+    """The case the old wrapper turned into a message ending at the colon."""
+    monkeypatch.setattr(gwr.asyncio, "sleep", _instant_sleep)
+    respx.get(url__startswith=FIND_URL).mock(side_effect=httpx.ConnectTimeout(""))
+    async with httpx.AsyncClient() as http:
+        with pytest.raises(httpx.ConnectTimeout) as raised:
+            await gwr.geoadmin_find_egid(http, 302031642)
+    assert str(raised.value) == ""
+    assert type(raised.value).__name__ == "ConnectTimeout"
+
+
+# --- 4b. Retry-After, jitter and the cap -------------------------------------
+
+
+def _status_error(headers: dict[str, str]) -> httpx.HTTPStatusError:
+    request = httpx.Request("GET", "https://example.invalid/")
+    return httpx.HTTPStatusError(
+        "",
+        request=request,
+        response=httpx.Response(429, headers=headers, request=request),
+    )
+
+
+def test_retry_after_reads_both_rfc9110_forms():
+    def resp(status: int, headers: dict[str, str]) -> httpx.Response:
+        request = httpx.Request("GET", "https://example.invalid/")
+        return httpx.Response(status, headers=headers, request=request)
+
+    assert gwr.parse_retry_after(resp(429, {"Retry-After": "120"})) == 120.0
+
+    later = format_datetime(datetime.now(UTC) + timedelta(seconds=90))
+    seconds = gwr.parse_retry_after(resp(503, {"Retry-After": later}))
+    assert seconds is not None and 80 < seconds <= 90
+
+    # A date in the past means "now", never a negative wait.
+    past = "Wed, 21 Oct 2020 07:28:00 GMT"
+    assert gwr.parse_retry_after(resp(503, {"Retry-After": past})) == 0.0
+
+    # Unparseable falls back to the curve — it must not crash on the error path.
+    assert gwr.parse_retry_after(resp(429, {"Retry-After": "bald"})) is None
+    assert gwr.parse_retry_after(resp(429, {})) is None
+
+    # 500 does not carry a meaningful Retry-After.
+    assert gwr.parse_retry_after(resp(500, {"Retry-After": "120"})) is None
+    assert gwr.parse_retry_after(None) is None
+
+
+def test_backoff_is_jittered_and_capped_after_jittering():
+    delays = {gwr.compute_delay(3, None) for _ in range(300)}
+    # attempt 3 -> 2 * 2**2 = 8s, spread into [0.5x, 1.5x]
+    assert len(delays) > 1, "a deterministic ladder synchronises every client"
+    assert min(delays) >= 4.0
+    assert max(delays) <= 12.0
+
+    # The cap is applied AFTER the jitter. Capping first and then multiplying by
+    # up to 1.5 would land at 30s, and the constant would claim a ceiling it
+    # does not hold.
+    deep = {gwr.compute_delay(9, None) for _ in range(200)}
+    assert max(deep) <= gwr.RETRY_MAX_DELAY
+
+    hinted = _status_error({"Retry-After": "600"})
+    assert {gwr.compute_delay(1, hinted) for _ in range(100)} == {gwr.RETRY_MAX_DELAY}
+
+
+def test_retry_after_jitter_is_one_sided():
+    """The source said when. Later is polite; earlier ignores the value read."""
+    delays = {gwr.compute_delay(1, _status_error({"Retry-After": "4"})) for _ in range(300)}
+    assert min(delays) >= 4.0, "never earlier than the source asked for"
+    assert max(delays) <= 5.0  # 4 * 1.25
 
 
 # --- 5. Store validation -----------------------------------------------------
