@@ -56,3 +56,40 @@ markers = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+# Expliziter Regelsatz, statt sich auf ruffs Vorgaben zu verlassen.
+#
+# Ohne `select` gilt ruffs Default (E4, E7, E9, F) — und der ist Sache der
+# jeweiligen ruff-Version, nicht dieses Repos. Genau daran hing der Bump auf
+# 0.16.1: SIM113 schlug an, weil sich der Vorgabesatz verschoben hatte, an
+# unberuehrtem Code. Ein `select` in der Konfiguration ersetzt die Vorgaben
+# vollstaendig; damit ist der erzwungene Satz exakt diese Liste, unabhaengig
+# davon, was eine spaetere Version als Default fuehrt. (Regel B1 des
+# github-repo-skill.)
+#
+# Die Liste ist der modale Satz des Portfolios — 18 der Server fahren genau
+# diesen, mehr als jeden anderen:
+#
+#   E  — pycodestyle-Fehler
+#   F  — Pyflakes (ungenutzte Importe und Variablen, f-String-Fehler, ...)
+#   W  — pycodestyle-Warnungen
+#   I  — Import-Sortierung (isort)
+#   UP — pyupgrade (moderne Syntax, z.B. `X | None` statt `Optional[X]`)
+#
+# Gemessen vor dem Einbau: gegen diesen Satz meldet der Baum genau EINEN
+# Befund, und das ist das E501 unten. Die Umstellung ist also folgenlos, sie
+# haelt nur fest, was ohnehin gilt.
+#
+# Gegenprobe, damit der Satz nicht bloss Dekoration ist: eine Sonde mit
+# unsortierten Importen und veralteten typing-Formen passiert den Vorgabesatz
+# mit «All checks passed!» und faellt hier mit I001, UP006, UP035 und UP045.
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+
+# E501 (Zeilenlaenge) bleibt bewusst aussen vor — 24 der 25 Portfolio-Repos mit
+# `E` im Satz halten es genauso. Die Zeilenlaenge entscheidet `ruff format`,
+# und was der Formatter nicht brechen kann, meldet E501 folgenlos: der einzige
+# Befund hier ist eine 102 Zeichen lange SQL-Zeile in einem Triple-Quote
+# (server.py:330). Sie zu «beheben» hiesse, lesbares SQL umzubrechen, damit
+# eine Regel schweigt, die der Formatter ohnehin ueberstimmt.
+ignore = ["E501"]
