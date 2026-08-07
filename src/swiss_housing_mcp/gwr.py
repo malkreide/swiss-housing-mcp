@@ -176,7 +176,6 @@ async def fetch_with_retry(http: httpx.AsyncClient, url: str, **kwargs) -> httpx
     """
     deadline = time.monotonic() + RETRY_TOTAL_BUDGET
     last_error: Exception | None = None
-    attempts = 0
 
     for attempt in range(RETRY_ATTEMPTS):
         if attempt > 0:
@@ -190,7 +189,6 @@ async def fetch_with_retry(http: httpx.AsyncClient, url: str, **kwargs) -> httpx
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             break
-        attempts += 1
         try:
             # httpx bounds each operation and its read timeout restarts with
             # every chunk — a slowly trickling response can outlast the budget
