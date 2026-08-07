@@ -55,7 +55,7 @@ jobs:
 
       # Pin ruff so an upstream release cannot change the default rule set or
       # formatter and break CI on unrelated, untouched code. Bump deliberately.
-      - run: pip install ruff==0.15.8
+      - run: pip install ruff==0.16.1
 
       - run: ruff check src/ tests/
 
