@@ -56,8 +56,14 @@ async def test_geocode_happy_path():
             200,
             json={
                 "results": [
-                    {"attrs": {"label": "Seilergraben 76 8001 Zürich",
-                               "featureId": "302031642_0", "y": 2683531.0, "x": 1247914.5}}
+                    {
+                        "attrs": {
+                            "label": "Seilergraben 76 8001 Zürich",
+                            "featureId": "302031642_0",
+                            "y": 2683531.0,
+                            "x": 1247914.5,
+                        }
+                    }
                 ]
             },
         )
@@ -73,9 +79,7 @@ async def test_geocode_happy_path():
 @respx.mock
 async def test_find_egid_soft_error_empty_results():
     """Known finding 2026-07-24: unknown EGID → HTTP 200 + empty array."""
-    respx.get(url__startswith=FIND_URL).mock(
-        return_value=httpx.Response(200, json={"results": []})
-    )
+    respx.get(url__startswith=FIND_URL).mock(return_value=httpx.Response(200, json={"results": []}))
     async with httpx.AsyncClient() as http:
         result = await gwr.geoadmin_find_egid(http, 999999999)
     assert result is None
