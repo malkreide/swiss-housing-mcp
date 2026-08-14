@@ -28,6 +28,7 @@ import hashlib
 import json
 import shutil
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import zipfile
@@ -183,6 +184,31 @@ def main() -> int:
 
     _write_provenance(recorded_at, entries)
     print(f"\nPROVENANCE.md geschrieben, Aufzeichnungsdatum {recorded_at}")
+    return _warne_bei_ignorierten(entries)
+
+
+def _warne_bei_ignorierten(entries: list[dict[str, Any]]) -> int:
+    """Meldet Aufzeichnungen, die `.gitignore` ausschliesst.
+
+    Eine ignorierte Fixture faellt lokal nicht auf — die Datei liegt ja da und
+    die Suite ist gruen. Erst die CI klont ein Repo ohne sie und wird rot, mit
+    einer Fehlermeldung, die nach einem Aufzeichnungsproblem aussieht statt nach
+    einer Regel in `.gitignore`. Genau so ist es beim ersten Lauf passiert.
+    """
+    pfade = [str((FIXTURES / e["name"]).relative_to(Path.cwd())) for e in entries]
+    try:
+        ergebnis = subprocess.run(
+            ["git", "check-ignore", *pfade], capture_output=True, text=True, check=False
+        )
+    except OSError:
+        return 0  # kein git zur Hand — kein Grund, das Aufzeichnen scheitern zu lassen
+    ignoriert = [z for z in ergebnis.stdout.splitlines() if z.strip()]
+    if ignoriert:
+        print("\n!! Diese Aufzeichnungen schliesst .gitignore aus, sie fehlen der CI:")
+        for z in ignoriert:
+            print(f"     {z}")
+        print("   Ausnahme in .gitignore ergaenzen, z. B. `!tests/fixtures/*.zip`.")
+        return 1
     return 0
 
 

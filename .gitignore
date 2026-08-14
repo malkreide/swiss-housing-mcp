@@ -12,3 +12,9 @@ venv/
 .DS_Store
 *.sqlite
 *.zip
+# ...ausser den aufgezeichneten Fixtures. Die allgemeine Regel oben soll
+# heruntergeladene Kantons-Dumps draussen halten; die Aufzeichnung unter
+# tests/fixtures/ ist dagegen Teil des Repos. Ohne diese Ausnahme fehlt sie in
+# der CI, waehrend lokal alles gruen bleibt — `git add -A` uebergeht ignorierte
+# Dateien wortlos.
+!tests/fixtures/*.zip

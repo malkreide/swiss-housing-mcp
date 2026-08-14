@@ -33,7 +33,7 @@ handgeschrieben. Die lassen sich nicht auf Zuruf aufzeichnen.
 - **Aufgezeichnet:** 2026-08-14
 - **Auswahl:** ZIP mit `data.sqlite`; Schema wortgleich uebernommen. Gebaeude EGID 1712079 mit 1 Eingaengen und 1 Wohnungen, `code` vollstaendig (405 Zeilen), `_metadata` vollstaendig. Quelle: 3410829 B gepackt
 - **Groesse:** 18124 B
-- **SHA-256:** `fc9f79d8e3d84be9d5d9537b48587835dcd564418eabbc66ddde4c9c53514ad9`
+- **SHA-256:** `b2c85213ab70d9e098d926b2f30763b8370912065965fe952bd477414847af5a`
 
 ## `geoadmin_search.json`
 
