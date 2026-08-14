@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Aufgezeichnete Fixtures, eine je externem Endpunkt, mit Nachweis.**
+  `tests/fixtures/` haelt jetzt echte Antworten aller drei Endpunkte: den
+  GWR-Dump von `public.madd.bfs.admin.ch` sowie `SearchServer` und
+  `MapServer/find` von `api3.geo.admin.ch`. Herkunft, Datum, Auswahlregel und
+  SHA-256 je Datei in `tests/fixtures/PROVENANCE.md`, geladen ueber
+  `tests/fixture_data.py`.
+
+  Der GWR-Dump ist der besondere Fall: die Quelle liefert kein JSON, sondern ein
+  ZIP mit einer SQLite-Datenbank, die der Server per SQL abfragt. Die
+  Aufzeichnung uebernimmt die `CREATE`-Anweisungen **wortgleich** — ein
+  nachgebautes Schema waere wieder eine Annahme — und fuellt sie mit einem
+  Gebaeude samt seinen Eingaengen und Wohnungen; `code` und `_metadata`
+  vollstaendig. 18 kB statt 3.4 MB, die 47 Spalten von `building` unberuehrt.
+
+  Beide geo.admin-Aufzeichnungen zeigen dasselbe Gebaeude wie der Dump. Zwei
+  erfundene Fixtures haetten hier leicht zwei verschiedene gezeigt.
+
+  Gegenprobe: Aufnahmedatum entfernt -> Datums-Check faellt; Spalte im Dump
+  umbenannt -> Schema- und Entpack-Test fallen; Wohnungen geleert ->
+  Zusammenhangs-Test faellt; EGID bei geo.admin geaendert -> der
+  Quellen-Abgleich faellt.
+
 ### Changed
 
 - **Der Backoff-Schlaf wird ueber einen Modul-Alias gepatcht, nicht ueber
