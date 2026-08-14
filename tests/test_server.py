@@ -5,6 +5,7 @@ Run from project root: PYTHONPATH=src pytest tests/ -m "not live"
 
 from __future__ import annotations
 
+import inspect
 from datetime import UTC, datetime, timedelta
 from email.utils import format_datetime
 
@@ -90,7 +91,7 @@ async def test_find_egid_soft_error_empty_results():
 
 @respx.mock
 async def test_retry_on_503_then_success(monkeypatch):
-    monkeypatch.setattr(gwr.asyncio, "sleep", _instant_sleep)
+    monkeypatch.setattr(gwr, "_sleep", _instant_sleep)
     route = respx.get(url__startswith=FIND_URL)
     route.side_effect = [
         httpx.Response(503),
@@ -104,7 +105,7 @@ async def test_retry_on_503_then_success(monkeypatch):
 
 @respx.mock
 async def test_no_retry_on_404(monkeypatch):
-    monkeypatch.setattr(gwr.asyncio, "sleep", _instant_sleep)
+    monkeypatch.setattr(gwr, "_sleep", _instant_sleep)
     route = respx.get(url__startswith=FIND_URL).mock(return_value=httpx.Response(404))
     async with httpx.AsyncClient() as http:
         with pytest.raises(httpx.HTTPStatusError):
@@ -128,7 +129,7 @@ async def test_network_error_surfaces_the_original_exception(monkeypatch):
     message was misleading: it looked informative in the test and was blank in
     production.
     """
-    monkeypatch.setattr(gwr.asyncio, "sleep", _instant_sleep)
+    monkeypatch.setattr(gwr, "_sleep", _instant_sleep)
     respx.get(url__startswith=FIND_URL).mock(side_effect=httpx.ConnectError("boom"))
     async with httpx.AsyncClient() as http:
         with pytest.raises(httpx.ConnectError):
@@ -138,7 +139,7 @@ async def test_network_error_surfaces_the_original_exception(monkeypatch):
 @respx.mock
 async def test_empty_str_error_still_names_its_type(monkeypatch):
     """The case the old wrapper turned into a message ending at the colon."""
-    monkeypatch.setattr(gwr.asyncio, "sleep", _instant_sleep)
+    monkeypatch.setattr(gwr, "_sleep", _instant_sleep)
     respx.get(url__startswith=FIND_URL).mock(side_effect=httpx.ConnectTimeout(""))
     async with httpx.AsyncClient() as http:
         with pytest.raises(httpx.ConnectTimeout) as raised:
@@ -237,3 +238,19 @@ async def test_live_geocode():
 
 async def _instant_sleep(_seconds: float) -> None:
     return None
+
+
+# --- Die Naht, und warum sie nicht `asyncio.sleep` ist -----------------------
+
+
+def test_der_retry_geht_ueber_den_alias():
+    """Sonst patchen die Tests eine Naht, die der Code gar nicht benutzt.
+
+    Umgeht das Modul den Alias, bleibt der Patch wirkungslos und die Suite
+    wartet die echte Backoff-Leiter ab. Kein Test faellt dabei — sie wird nur
+    um ein Vielfaches langsamer, und eine laengere Laufzeit ist kein Signal,
+    das jemand liest. Diese Zusicherung macht daraus einen Fehlschlag.
+    """
+    quelle = inspect.getsource(gwr)
+    assert "await _sleep(" in quelle, "der Retry ruft den Modul-Alias nicht mehr auf"
+    assert "await asyncio.sleep(" not in quelle, "der Retry umgeht den Alias"

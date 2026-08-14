@@ -31,6 +31,12 @@ from urllib.parse import urlsplit
 
 import httpx
 
+# Eigener Alias, damit Tests die Wartezeit nullen koennen, ohne `asyncio.sleep`
+# prozessweit zu entschaerfen. `monkeypatch.setattr(<modul>.asyncio, "sleep", ...)`
+# sieht lokal aus, ersetzt `sleep` aber auf dem geteilten Modulobjekt — fuer
+# httpx, respx, pytest-asyncio und jeden anderen Importeur im Prozess.
+_sleep = asyncio.sleep
+
 MADD_BASE = "https://public.madd.bfs.admin.ch"
 GEOADMIN_BASE = "https://api3.geo.admin.ch/rest/services/api"
 GWR_LAYER = "ch.bfs.gebaeude_wohnungs_register"
@@ -184,7 +190,7 @@ async def fetch_with_retry(http: httpx.AsyncClient, url: str, **kwargs) -> httpx
             # has given up by the time it ends. Stop instead of sleeping.
             if delay >= deadline - time.monotonic():
                 break
-            await asyncio.sleep(delay)
+            await _sleep(delay)
 
         remaining = deadline - time.monotonic()
         if remaining <= 0:

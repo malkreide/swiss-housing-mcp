@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Der Backoff-Schlaf wird ueber einen Modul-Alias gepatcht, nicht ueber
+  `asyncio.sleep`.** Die Tests nullten die Wartezeit mit
+  `monkeypatch.setattr(<modul>.asyncio, "sleep", ...)`. Das liest sich lokal,
+  ersetzt `sleep` aber auf dem geteilten Modulobjekt — fuer httpx, respx,
+  pytest-asyncio und jeden anderen Importeur im Prozess. Das Modul legt die
+  Naht jetzt als `_sleep = asyncio.sleep` offen; gepatcht wird diese.
+  `test_der_retry_geht_ueber_den_alias` haelt sie: umgeht der Retry den Alias,
+  faellt der Test in Sekundenbruchteilen. Ohne ihn fiel gar nichts — die Suite
+  wurde nur ein Vielfaches langsamer, und eine laengere Laufzeit ist kein
+  Signal, das jemand liest.
+
 ### Fixed
 - **`fetch_with_retry` had six defects, all inherited from the shared
   template.** `gwr.py` copied the `mcp-data-source-probe` reference retry, and
