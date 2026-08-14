@@ -1,0 +1,220 @@
+{
+  "results": [
+    {
+      "layerBodId": "ch.bfs.gebaeude_wohnungs_register",
+      "layerName": "GWR: Gebäudestatus",
+      "featureId": "1712079_0",
+      "id": "1712079_0",
+      "attributes": {
+        "egid": "1712079",
+        "strname_deinr": "Alte Unterrainstrasse 16",
+        "plz_plz6": "9050/905000",
+        "ggdename": "Appenzell",
+        "ggdenr": 3101,
+        "gexpdat": "12.08.2026",
+        "gdekt": "AI",
+        "egrid": "CH935977411138",
+        "lgbkr": 3101,
+        "lparz": "570",
+        "lparzsx": null,
+        "ltyp": null,
+        "gebnr": "711",
+        "gbez": "",
+        "gkode": 2749205.095,
+        "gkodn": 1243016.367,
+        "gksce": 901,
+        "gstat": 1004,
+        "gkat": 1030,
+        "gklas": 1110,
+        "gbauj": 1900,
+        "gbaum": null,
+        "gbaup": 8011,
+        "gabbj": null,
+        "garea": 287,
+        "gvol": null,
+        "gvolnorm": null,
+        "gvolsce": null,
+        "gastw": 2,
+        "ganzwhg": 1,
+        "gazzi": null,
+        "gschutzr": null,
+        "gebf": null,
+        "gwaerzh1": 7430,
+        "genh1": 7541,
+        "gwaersceh1": 864,
+        "gwaerdath1": "26.11.2025",
+        "gwaerzh2": null,
+        "genh2": null,
+        "gwaersceh2": null,
+        "gwaerdath2": "-",
+        "gwaerzw1": 7630,
+        "genw1": 7541,
+        "gwaerscew1": 864,
+        "gwaerdatw1": "26.11.2025",
+        "gwaerzw2": 7600,
+        "genw2": 7500,
+        "gwaerscew2": 860,
+        "gwaerdatw2": "29.11.2001",
+        "edid": "0",
+        "egaid": 100995802,
+        "deinr": "16",
+        "esid": 10030805,
+        "strname": [
+          "Alte Unterrainstrasse"
+        ],
+        "strnamk": [
+          "Alte Unterrainstr."
+        ],
+        "strindx": [
+          "Unt"
+        ],
+        "strsp": [
+          "DE"
+        ],
+        "stroffiziel": "1",
+        "dplz4": 9050,
+        "dplzz": 0,
+        "dplzname": "Appenzell",
+        "dkode": 2749217.371,
+        "dkodn": 1243016.805,
+        "doffadr": 1,
+        "dexpdat": "12.08.2026",
+        "ewid": [
+          "1"
+        ],
+        "whgnr": [
+          null
+        ],
+        "wstwk": [
+          3100
+        ],
+        "wmehrg": [
+          1
+        ],
+        "weinr": [
+          null
+        ],
+        "wbez": [
+          null
+        ],
+        "wstat": [
+          3004
+        ],
+        "wexpdat": [
+          "2026-08-12T00:00:00"
+        ],
+        "wbauj": [
+          1999
+        ],
+        "wabbj": [
+          null
+        ],
+        "warea": [
+          151
+        ],
+        "wazim": [
+          7
+        ],
+        "wkche": [
+          1
+        ],
+        "label": "Alte Unterrainstrasse 16"
+      }
+    },
+    {
+      "layerBodId": "ch.bfs.gebaeude_wohnungs_register",
+      "layerName": "GWR: Gebäudestatus",
+      "featureId": "191712079_0",
+      "id": "191712079_0",
+      "attributes": {
+        "egid": "191712079",
+        "strname_deinr": "Klein-Wüesti 1.1",
+        "plz_plz6": "6130/613000",
+        "ggdename": "Willisau",
+        "ggdenr": 1151,
+        "gexpdat": "12.08.2026",
+        "gdekt": "LU",
+        "egrid": "CH135087353272",
+        "lgbkr": 528,
+        "lparz": "1227",
+        "lparzsx": null,
+        "ltyp": null,
+        "gebnr": "208b",
+        "gbez": "Maschinenhalle",
+        "gkode": 2642450.97,
+        "gkodn": 1213877.566,
+        "gksce": 901,
+        "gstat": 1004,
+        "gkat": 1060,
+        "gklas": 1271,
+        "gbauj": null,
+        "gbaum": null,
+        "gbaup": null,
+        "gabbj": null,
+        "garea": 103,
+        "gvol": null,
+        "gvolnorm": null,
+        "gvolsce": null,
+        "gastw": null,
+        "ganzwhg": null,
+        "gazzi": null,
+        "gschutzr": null,
+        "gebf": null,
+        "gwaerzh1": null,
+        "genh1": null,
+        "gwaersceh1": null,
+        "gwaerdath1": "-",
+        "gwaerzh2": null,
+        "genh2": null,
+        "gwaersceh2": null,
+        "gwaerdath2": "-",
+        "gwaerzw1": null,
+        "genw1": null,
+        "gwaerscew1": null,
+        "gwaerdatw1": "-",
+        "gwaerzw2": null,
+        "genw2": null,
+        "gwaerscew2": null,
+        "gwaerdatw2": "-",
+        "edid": "0",
+        "egaid": 102411351,
+        "deinr": "1.1",
+        "esid": 10018372,
+        "strname": [
+          "Klein-Wüesti"
+        ],
+        "strnamk": [
+          "Klein-Wüesti"
+        ],
+        "strindx": [
+          "Wüe"
+        ],
+        "strsp": [
+          "DE"
+        ],
+        "stroffiziel": "1",
+        "dplz4": 6130,
+        "dplzz": 0,
+        "dplzname": "Willisau",
+        "dkode": 2642451.0,
+        "dkodn": 1213877.0,
+        "doffadr": 0,
+        "dexpdat": "12.08.2026",
+        "ewid": null,
+        "whgnr": null,
+        "wstwk": null,
+        "wmehrg": null,
+        "weinr": null,
+        "wbez": null,
+        "wstat": null,
+        "wexpdat": null,
+        "wbauj": null,
+        "wabbj": null,
+        "warea": null,
+        "wazim": null,
+        "wkche": null,
+        "label": "Klein-Wüesti 1.1"
+      }
+    }
+  ]
+}
