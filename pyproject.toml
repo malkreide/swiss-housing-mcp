@@ -31,7 +31,13 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
     "respx>=0.21",
-    "ruff>=0.5",
+    # Exakter Pin, und die einzige Stelle, an der die ruff-Version steht. Als
+    # hier eine Spanne stand, loeste ein dev-Install auf die jeweils neueste
+    # Version auf, waehrend ci.yml `ruff==0.16.1` darueber installierte —
+    # lokaler Lauf und Gate waren sich also ueber die Version uneinig.
+    # `test_werkzeug_versionen.py` faellt, wenn hier wieder eine Spanne steht
+    # oder ein Workflow eine zweite Version setzt.
+    "ruff==0.16.1",
 ]
 
 [project.scripts]

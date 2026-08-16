@@ -53,10 +53,9 @@ jobs:
         with:
           python-version: "3.11"
 
-      # Pin ruff so an upstream release cannot change the default rule set or
-      # formatter and break CI on unrelated, untouched code. Bump deliberately.
-      - run: pip install ruff==0.16.1
-
+      # Kein eigener ruff-Install mehr: der Pin steht in pyproject und kommt
+      # mit dem dev-Install mit. Der Schritt hier lief danach und gewann
+      # gegen pyproject — ein Bump dort haette in der CI nichts bewirkt.
       - run: ruff check src/ tests/
 
       # Scope identisch mit `ruff check` eine Zeile hoeher. Vorher lief das
