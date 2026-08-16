@@ -68,6 +68,22 @@ dort sind damit ungeprüft; wer sie anfasst, bekommt kein Gate-Feedback. Kein
 `include` unter `[tool.ruff]` setzen — der Umfang der genannten Pfade stimmt
 (nachgemessen, eine Sonde in `tests/` lässt beide Gates fallen).
 
-**Live-Tests:** eigener Job in `ci.yml`, nächtlich per Cron (`29 3 * * *`).
-Der Lauf wird eingeordnet statt am Exit-Code gemessen; ein Befund öffnet oder
-schliesst ein Issue. DRIFT-005 ist erfüllt.
+Heute bestehen die zwei Dateien ruff ohnehin — nachgemessen. Die Lücke ist
+also real, beisst aber noch nicht; genau deshalb fällt sie beim nächsten
+Anfassen niemandem auf.
+
+**Fünf ist die ganze Liste — es gibt kein Versions-Sync-Gate.** `scripts/`
+enthält nur `classify_live_run.py` und `record_fixtures.py`, ein
+`check_version_sync.py` fehlt, und kein Workflow ruft eines auf.
+`pyproject.toml` und `server.json` stehen beide auf `0.1.0`, gehalten wird
+das von nichts. Die Schwester-Server fahren den Gate; beim Anheben hier also
+beide Stellen von Hand.
+
+**Die zwei Jobs sind ungleich breit.** `test` (Syntax, Import, pytest) fährt
+die Matrix 3.11/3.12/3.13, `lint` (die zwei ruff-Gates) läuft ohne Matrix auf
+3.11. Ein grünes 3.12/3.13 sagt über ruff nichts aus. `test` setzt kein
+`fail-fast: false`.
+
+**Live-Tests:** eigener Job in `ci.yml`, nächtlich per Cron (`29 3 * * *`),
+auf PRs per `if:` übersprungen. Der Lauf wird eingeordnet statt am Exit-Code
+gemessen; ein Befund öffnet oder schliesst ein Issue. DRIFT-005 ist erfüllt.
