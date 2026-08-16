@@ -66,6 +66,9 @@ Install und überstimmt den Pin still (`ci.yml` hatte einen;
 `test_werkzeug_versionen.py` hält beides fest). Eine `.pre-commit-config.yaml`
 gibt es nicht.
 
+Vor dem Lauf `ruff --version` prüfen: ein älteres ruff früher im `PATH`
+schlägt den Pin, ohne dass der Install etwas meldet.
+
 **Gates, wörtlich aus der CI:**
 
 ```bash
