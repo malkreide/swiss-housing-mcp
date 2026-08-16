@@ -53,9 +53,14 @@ jobs:
         with:
           python-version: "3.11"
 
-      # Kein eigener ruff-Install mehr: der Pin steht in pyproject und kommt
-      # mit dem dev-Install mit. Der Schritt hier lief danach und gewann
-      # gegen pyproject — ein Bump dort haette in der CI nichts bewirkt.
+      # Holt ruff aus dem [dev]-Extra, wo seine Version als einziges steht.
+      # Hier stand `pip install ruff==<version>`, das nach einem Install liefe
+      # und gegen pyproject gewaenne. Dieser Job installiert das Projekt sonst
+      # nicht — den Schritt ersatzlos zu streichen nahm ihm das Werkzeug und
+      # machte ihn rot. Der Install muss also bleiben, nur eben ohne zweite
+      # Versionsangabe.
+      - run: pip install -e ".[dev]"
+
       - run: ruff check src/ tests/
 
       # Scope identisch mit `ruff check` eine Zeile hoeher. Vorher lief das
