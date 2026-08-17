@@ -15,6 +15,7 @@ import httpx
 from mcp.server.mcpserver import MCPServer
 
 from . import gwr
+from ._version import __version__
 from .models import (
     BBoxStatsResponse,
     Building,
@@ -52,7 +53,7 @@ _MUNI_CANTON_SEED = {261: "zh"}
 
 
 def _http() -> httpx.AsyncClient:
-    return httpx.AsyncClient(headers={"User-Agent": "swiss-housing-mcp/0.1.0"})
+    return httpx.AsyncClient(headers={"User-Agent": f"swiss-housing-mcp/{__version__}"})
 
 
 async def _canton_for_municipality(bfs_nr: int, http: httpx.AsyncClient) -> str:
