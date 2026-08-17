@@ -69,14 +69,20 @@ jobs:
       - name: Ruff-Pin (PATH und Modul gegen pyproject.toml)
         run: python scripts/check_ruff_pin.py
 
-      - run: ruff check src/ tests/
+      # `scripts/` kam zuletzt dazu, weil es ausserhalb BEIDER Gates lag.
+      # Dort steht kein Beiwerk: `check_version_sync.py` ist selbst ein
+      # CI-Gate, `record_fixtures.py` erzeugt die Fixtures, gegen die die
+      # Unit-Tests laufen, und `classify_live_run.py` entscheidet, ob ein
+      # Live-Lauf `clear`, `finding` oder `unknown` heisst. Werkzeug, an dem
+      # die Aussagekraft des geprueften Codes haengt, gehoert selbst geprueft.
+      - run: ruff check src/ tests/ scripts/
 
       # Scope identisch mit `ruff check` eine Zeile hoeher. Vorher lief das
       # Format-Gate nur ueber `src/`, waehrend der Linter auch `tests/` sah —
       # Testcode wurde also nie auf Format geprueft, und weil `ruff format`
       # niemand automatisch darueber laufen liess, driftete er ungehindert.
       # Zwei Gates mit zwei Reichweiten sehen aus wie ein Gate.
-      - run: ruff format --check src/ tests/
+      - run: ruff format --check src/ tests/ scripts/
 
   live:
     # Only on the nightly schedule or manual dispatch — never on PR/push so the

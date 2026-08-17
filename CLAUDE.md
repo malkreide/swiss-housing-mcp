@@ -75,32 +75,27 @@ schlägt den Pin, ohne dass der Install etwas meldet.
 python -m py_compile src/swiss_housing_mcp/server.py src/swiss_housing_mcp/gwr.py
 python -c "from swiss_housing_mcp.server import mcp; print('Import OK')"
 pytest -m "not live" -v
+python scripts/check_version_sync.py
 python scripts/check_ruff_pin.py
-ruff check src/ tests/
-ruff format --check src/ tests/
+ruff check src/ tests/ scripts/
+ruff format --check src/ tests/ scripts/
 ```
 
-**Die ruff-Gates lassen `scripts/` aus** — anders als in den meisten
-Schwester-Servern, wo `src/ tests/ scripts/` geprüft wird. Die zwei Dateien
-dort sind damit ungeprüft; wer sie anfasst, bekommt kein Gate-Feedback. Kein
-`include` unter `[tool.ruff]` setzen — der Umfang der genannten Pfade stimmt
-(nachgemessen, eine Sonde in `tests/` lässt beide Gates fallen).
+**Die ruff-Gates decken `scripts/` seit diesem Commit mit** — vorher nicht,
+und zu den drei Dateien dort gehört inzwischen `check_version_sync.py`, also
+ein CI-Gate selbst. Kein `include` unter `[tool.ruff]` setzen: der Umfang der
+genannten Pfade stimmt (nachgemessen, eine Sonde in `tests/` lässt beide
+Gates fallen).
 
-Heute bestehen die zwei Dateien ruff ohnehin — nachgemessen. Die Lücke ist
-also real, beisst aber noch nicht; genau deshalb fällt sie beim nächsten
-Anfassen niemandem auf.
+Der erste Lauf mit dem erweiterten Umfang war hier **grün** — die drei
+Dateien bestanden ruff schon vorher. Das ist kein Argument gegen die
+Erweiterung, sondern der Grund, warum die Lücke so lange offenblieb: sie biss
+noch nicht.
 
-**Fünf ist die ganze Liste — es gibt kein Versions-Sync-Gate.** `scripts/`
-enthält nur `classify_live_run.py` und `record_fixtures.py`, ein
-`check_version_sync.py` fehlt, und kein Workflow ruft eines auf.
-`pyproject.toml` und `server.json` stehen beide auf `0.1.0`, gehalten wird
-das von nichts. Die Schwester-Server fahren den Gate; beim Anheben hier also
-beide Stellen von Hand.
-
-**Die zwei Jobs sind ungleich breit.** `test` (Syntax, Import, pytest) fährt
-die Matrix 3.11/3.12/3.13, `lint` (die zwei ruff-Gates) läuft ohne Matrix auf
-3.11. Ein grünes 3.12/3.13 sagt über ruff nichts aus. `test` setzt kein
-`fail-fast: false`.
+**Die zwei Jobs sind ungleich breit.** `test` (Syntax, Import, pytest,
+Versions-Sync) fährt die Matrix 3.11/3.12/3.13, `lint` (die zwei ruff-Gates)
+läuft ohne Matrix auf 3.11. Ein grünes 3.12/3.13 sagt über ruff nichts aus.
+`test` setzt kein `fail-fast: false`.
 
 **Live-Tests:** eigener Job in `ci.yml`, nächtlich per Cron (`29 3 * * *`),
 auf PRs per `if:` übersprungen. Der Lauf wird eingeordnet statt am Exit-Code
