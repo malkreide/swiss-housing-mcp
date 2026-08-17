@@ -75,6 +75,7 @@ schlägt den Pin, ohne dass der Install etwas meldet.
 python -m py_compile src/swiss_housing_mcp/server.py src/swiss_housing_mcp/gwr.py
 python -c "from swiss_housing_mcp.server import mcp; print('Import OK')"
 pytest -m "not live" -v
+python scripts/check_ruff_pin.py
 ruff check src/ tests/
 ruff format --check src/ tests/
 ```

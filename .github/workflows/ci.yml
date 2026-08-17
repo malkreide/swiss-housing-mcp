@@ -64,6 +64,11 @@ jobs:
       # Versionsangabe.
       - run: pip install -e ".[dev]"
 
+      # Der Pin wirkt nur, wenn `ruff` ihn auch aufruft: liegt frueher im
+      # PATH ein anderes ruff, gewinnt jenes, und der Install meldet nichts.
+      - name: Ruff-Pin (PATH und Modul gegen pyproject.toml)
+        run: python scripts/check_ruff_pin.py
+
       - run: ruff check src/ tests/
 
       # Scope identisch mit `ruff check` eine Zeile hoeher. Vorher lief das
