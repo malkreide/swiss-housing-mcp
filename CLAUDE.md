@@ -76,6 +76,7 @@ python -m py_compile src/swiss_housing_mcp/server.py src/swiss_housing_mcp/gwr.p
 python -c "from swiss_housing_mcp.server import mcp; print('Import OK')"
 pytest -m "not live" -v
 python scripts/check_version_sync.py
+python scripts/check_ruff_pin.py
 ruff check src/ tests/ scripts/
 ruff format --check src/ tests/ scripts/
 ```
