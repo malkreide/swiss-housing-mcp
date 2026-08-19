@@ -81,14 +81,17 @@ ruff check src/ tests/ scripts/
 ruff format --check src/ tests/ scripts/
 ```
 
-**Die ruff-Gates decken `scripts/` seit diesem Commit mit** — vorher nicht,
-und zu den drei Dateien dort gehört inzwischen `check_version_sync.py`, also
-ein CI-Gate selbst. Kein `include` unter `[tool.ruff]` setzen: der Umfang der
-genannten Pfade stimmt (nachgemessen, eine Sonde in `tests/` lässt beide
-Gates fallen).
+Der Block setzt `pip install -e ".[dev]"` voraus; die CI setzt für Import-,
+Unit- und Live-Schritt zusätzlich `PYTHONPATH=src`.
 
-Der erste Lauf mit dem erweiterten Umfang war hier **grün** — die drei
-Dateien bestanden ruff schon vorher. Das ist kein Argument gegen die
+**Die ruff-Gates decken `scripts/` mit** — bis zum Commit «ci: `scripts/` in
+den ruff-Scope nehmen» nicht, und von den inzwischen vier Dateien dort sind
+zwei selbst CI-Gates (`check_version_sync.py`, `check_ruff_pin.py`). Kein
+`include` unter `[tool.ruff]` setzen: der Umfang der genannten Pfade stimmt
+(nachgemessen, eine Sonde in `tests/` lässt beide Gates fallen).
+
+Der erste Lauf mit dem erweiterten Umfang war hier **grün** — die damals
+drei Dateien bestanden ruff schon vorher. Das ist kein Argument gegen die
 Erweiterung, sondern der Grund, warum die Lücke so lange offenblieb: sie biss
 noch nicht.
 
