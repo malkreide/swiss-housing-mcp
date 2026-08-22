@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Frischehinweise auf `tools/list` und `server/discover`** (SEP-2549, Spec
+  `2026-07-28`): `ttlMs` 300000, `cacheScope` `public`. Das SDK setzt beides von
+  sich aus auf «sofort veraltet, nie geteilt» — wer nichts übergibt, verhält
+  sich also nicht neutral, sondern lässt jeden Client bei jeder Verbindung neu
+  auflisten, für eine Liste, die beim Import feststeht und für jeden Aufrufer
+  dieselbe ist. `prompts/list` und `resources/list` bleiben ungesetzt: dieser
+  Server registriert weder das eine noch das andere.
+
+### Added
+
 - **Die Pruefsummen im Fixture-Nachweis waren Zierde.** `PROVENANCE.md` fuehrt
   je Datei einen SHA-256 — um genau einen Fall zu fangen: eine Aufzeichnung,
   die nach dem Lauf von Hand nachgebessert wurde. Eine korrigierte Antwort ist
