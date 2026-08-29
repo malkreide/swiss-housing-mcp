@@ -89,8 +89,9 @@ def deklarierte_labels(text: str) -> set[str]:
 
     Bewusst ueber den Parser und nicht ueber einen regulaeren Ausdruck: Hier
     wird gelesen, nicht geschnitten, also kostet ein YAML-Round-Trip nichts.
-    `entferne_dependabot_labels.py` hat den umgekehrten Fall und deshalb die
-    umgekehrte Wahl.
+    Das Migrationsskript, das die Zeilen 2026 entfernt hat, hatte den
+    umgekehrten Fall — es musste Kommentare und Formatierung erhalten und
+    schnitt deshalb zeilenweise.
     """
 
     def sammle(knoten: Any) -> Iterable[str]:
