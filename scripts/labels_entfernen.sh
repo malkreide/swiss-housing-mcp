@@ -2,11 +2,28 @@
 # `labels:` aus .github/dependabot.yml entfernen — portfolioweit, je ein Pull Request.
 #
 # WARUM
-# Dependabot legt Labels nicht an. Steht unter `labels:` ein Name, den das Repo
-# nicht kennt, haengt es nur einen Kommentar an jeden PR und laesst ihn
-# ungelabelt — kein roter Check, kein Log. Ein Gate dagegen kann es nicht
-# geben: Labels sind GitHub-Zustand, kein Dateiinhalt. Die Information ist
-# ohnehin doppelt da (Autor `dependabot[bot]`, Commit-Prefix, Branchname).
+# `labels:` wegzulassen ist die STAERKERE Konfiguration, nicht die schwaechere.
+# Die Optionsreferenz von Dependabot sagt: ohne den Schluessel bekommt jeder PR
+# ein `dependencies`-Label, bei mehreren Paketmanagern zusaetzlich eines fuers
+# Oekosystem — «Dependabot creates these default labels automatically, as
+# necessary in your repository». Eine eigene Liste ersetzt diesen Vorgabesatz,
+# und «if any of these labels is not defined in the repository, it is ignored»:
+# Dependabot haengt dann nur einen Kommentar an jeden PR und laesst ihn
+# ungelabelt — kein roter Check, kein Log.
+#
+# Die Zeile war also nicht bloss wirkungslos, sie war schaedlich: Sie hat einen
+# Vorgabesatz, der sich selbst anlegt und pflegt, durch Namen ersetzt, die das
+# Repo grossenteils nicht kannte.
+#
+# Der erste Anlauf hatte das falsch herum begruendet («Dependabot legt Labels
+# nicht an»). Am 29.8.2026 zeigte eine Messung in zehn Repos, dass `dependencies`
+# in sieben davon sehr wohl existiert — mit GitHubs Standardbeschreibung, also
+# von Dependabot selbst angelegt. Das las sich zuerst wie ein Widerspruch zur
+# Aktion und war in Wahrheit ihr bester Beleg. Erst die Spec nachlesen, dann
+# einordnen.
+#
+# Ein Gate dagegen kann es trotzdem nicht geben: Labels sind GitHub-Zustand,
+# kein Dateiinhalt.
 #
 # DIE REPO-LISTE WIRD ABGEFRAGT, NICHT GEPFLEGT
 # Die Vorgaengerfassung trug 23 Namen fest verdrahtet. Am 29.8.2026 hatte das
@@ -53,7 +70,15 @@ OWNER="malkreide"
 
 # `register-mcp`: dort existieren die vier Labels seit dem 28.8.2026, die
 # Zeile kostet nichts mehr.
-AUSNAHMEN=(register-mcp)
+#
+# `openlex-mcp`: dort steht ein eigenes Gate, `tests/test_dependabot_labels.py`,
+# das verlangt, dass die Konfiguration genau `dependencies` deklariert. Der Lauf
+# vom 29.8.2026 hat dort einen roten PR erzeugt (#75, geschlossen). Ob das Gate
+# bleiben soll, ist eine Entscheidung fuer jenes Repo — nach der Optionsreferenz
+# zementiert es einen engeren Zustand als die Vorgabe. Bis das dort geklaert ist,
+# bleibt das Repo aussen vor, damit der naechste Lauf denselben roten PR nicht
+# erneut anlegt.
+AUSNAHMEN=(register-mcp openlex-mcp)
 
 DRY=""
 REPO_VORGABE=""
@@ -144,32 +169,37 @@ Die `labels:`-Zeilen fallen aus `.github/dependabot.yml`.
 
 ## Warum
 
-Dependabot **legt Labels nicht an**. Steht dort ein Name, den das Repo nicht
-kennt, hängt Dependabot nur einen Kommentar an jeden Pull Request und lässt
-ihn ungelabelt:
+**Ohne `labels:` beschriftet Dependabot besser, nicht schlechter.** Die
+[Optionsreferenz](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference)
+sagt zum Vorgabeverhalten:
+
+> All pull requests have a `dependencies` label. If you define more than one
+> package manager, an additional label for the ecosystem or language is added
+> to each pull request. […] Dependabot creates these default labels
+> automatically, as necessary in your repository.
+
+Und zu einer eigenen Liste:
+
+> If any of these labels is not defined in the repository, it is ignored.
+
+Eine eigene Liste **ersetzt** also den Vorgabesatz. Namen, die das Repo nicht
+kennt, fallen weg; Dependabot hängt dafür nur einen Kommentar an jeden Pull
+Request und lässt ihn ungelabelt:
 
 ```
 The following labels could not be found: `dependencies`, `python`.
 ```
 
 Kein roter Check, kein Log — nur diese Zeile. Am 28.8.2026 fehlten die
-konfigurierten Labels in 23 von 24 geprüften Repos des Portfolios, teils seit
-Monaten.
+konfigurierten Labels in 23 von 24 geprüften Repos des Portfolios.
 
-Ein Gate dagegen kann es nicht geben: Labels sind GitHub-Zustand, kein
-Dateiinhalt. Nichts legt sie an, nichts hält sie synchron, und der Ausfall ist
-still.
+Die Zeile war damit nicht bloss wirkungslos, sondern schädlich: Sie hat einen
+Vorgabesatz, der sich selbst anlegt und pflegt, durch grösstenteils
+nicht existierende Namen ersetzt. Sie zu entfernen stellt die Vorgabe wieder
+her — `dependencies` plus Ökosystem-Label, von Dependabot selbst angelegt.
 
-Die Information geht dabei nicht verloren — sie steht ohnehin dreifach im PR:
-
-| Was das Label sagte | Woher es weiterhin kommt |
-|---|---|
-| Dependabot-PR | Autor `dependabot[bot]` → `author:app/dependabot` |
-| Ökosystem | Commit-Prefix (`deps`/`ci`/`docker`) |
-| Ökosystem | Branchname `dependabot/<ökosystem>/…` |
-
-`register-mcp` behält seine Zeile: dort existieren die vier Labels seit dem
-28.8.2026.
+`register-mcp` und `openlex-mcp` behalten ihre Zeile: dort existieren die
+Labels, und `openlex-mcp` hat zusätzlich ein Gate, das sie verlangt.
 
 ## Prüfung
 
@@ -233,19 +263,22 @@ for R in "${REPOS[@]}"; do
   git -C "$ZIEL" checkout -q -b "$BRANCH"
   git -C "$ZIEL" add .github/dependabot.yml
   git -C "$ZIEL" commit -q -m "$TITEL" -m \
-"Dependabot legt Labels nicht an. Steht unter \`labels:\` ein Name, den das Repo
-nicht kennt, haengt es nur einen Kommentar an jeden Pull Request und laesst ihn
-ungelabelt — kein roter Check, kein Log. Am 28.8.2026 fehlten die
-konfigurierten Labels in 23 von 24 geprueften Repos des Portfolios.
+"Ohne \`labels:\` beschriftet Dependabot besser, nicht schlechter. Die
+Optionsreferenz sagt: jeder PR bekommt per Vorgabe ein \`dependencies\`-Label,
+bei mehreren Paketmanagern zusaetzlich eines fuers Oekosystem, und Dependabot
+legt diese Labels bei Bedarf selbst an. Eine eigene Liste ersetzt den
+Vorgabesatz, und Namen, die das Repo nicht kennt, werden ignoriert — quittiert
+mit einem Kommentar an jedem PR, ohne roten Check und ohne Log. Am 28.8.2026
+fehlten die konfigurierten Labels in 23 von 24 geprueften Repos.
 
-Ein Gate dagegen kann es nicht geben: Labels sind GitHub-Zustand, kein
-Dateiinhalt. Die Information steht ohnehin dreifach im PR — Autor
-\`dependabot[bot]\`, Commit-Prefix und Branchname nennen dasselbe.
+Die Zeile war damit nicht wirkungslos, sondern schaedlich: Sie hat einen
+Vorgabesatz, der sich selbst pflegt, durch grossenteils nicht existierende
+Namen ersetzt.
 
 Der Schnitt ist semantisch gegengeprueft: Ergebnis parst, kein \`labels\` mehr,
 Struktur sonst identisch.
 
-\`register-mcp\` behaelt seine Zeile: dort existieren die vier Labels."
+\`register-mcp\` und \`openlex-mcp\` behalten ihre Zeile."
 
   if ! git -C "$ZIEL" push -q -u origin "$BRANCH"; then
     echo "  FEHLER: Push fehlgeschlagen"; fehler=$((fehler+1)); continue

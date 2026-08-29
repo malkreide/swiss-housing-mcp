@@ -3,11 +3,18 @@
 # In diesem Repo lief bisher gar kein Dependabot: die Datei fehlte. Ein
 # fehlender Scheduler meldet sich nicht, deshalb ist das nie aufgefallen.
 #
-# Bewusst OHNE `labels:`. Die im Portfolio übliche Zeile `labels: ["dependencies"]`
-# verlangt ein Label, das am 2026-08-28 in 23 von 24 geprüften Repos nicht
-# existierte; Dependabot quittiert das mit einem Kommentar an jedem PR. Sieben
-# Server fahren die Konfiguration deshalb schon ohne. Existiert das Label, kann
-# die Zeile nachgezogen werden.
+# Bewusst OHNE `labels:` — und zwar dauerhaft, nicht nur mangels Label.
+#
+# Ohne den Schlüssel bekommt jeder PR per Vorgabe ein `dependencies`-Label, bei
+# mehreren Paketmanagern zusätzlich eines fürs Ökosystem, und Dependabot legt
+# beide bei Bedarf selbst an. Eine eigene Liste ERSETZT diesen Vorgabesatz, und
+# Namen, die das Repo nicht kennt, werden ignoriert — quittiert mit einem
+# Kommentar an jedem PR, ohne roten Check.
+#
+# Die Zeile nachzuziehen wäre also auch dann ein Rückschritt, wenn das Label
+# existiert: Sie tauscht einen sich selbst pflegenden Vorgabesatz gegen eine
+# Aufzählung, die jemand von Hand synchron halten müsste. Das stand hier vorher
+# andersherum.
 version: 2
 updates:
 
