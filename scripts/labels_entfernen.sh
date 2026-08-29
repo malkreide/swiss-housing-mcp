@@ -17,10 +17,13 @@
 # unter AUSNAHMEN steht.
 #
 # VORAUSSETZUNGEN
+#   - eine Bash. Unter Windows heisst das Git Bash oder WSL, nicht PowerShell:
+#     dort ist `./labels_entfernen.sh` kein Befehl, sondern ein Dateiname.
 #   - `gh` angemeldet mit Schreibrecht auf die Repos
 #   - `entferne_dependabot_labels.py` im selben Verzeichnis wie dieses Skript
-#   - python3 mit `pyyaml` (das Entfernen-Skript verweigert ohne die
-#     Gegenprobe den Dienst — siehe dort)
+#   - Python 3 mit `pyyaml` (das Entfernen-Skript verweigert ohne die
+#     Gegenprobe den Dienst — siehe dort). Wie der Interpreter heisst, sucht
+#     das Skript selbst heraus; siehe PY weiter unten.
 #
 # VERWENDUNG
 #   ./labels_entfernen.sh --dry-run                 # nur zeigen
@@ -59,9 +62,27 @@ done
 
 [ -f "$ENTFERNER" ] || { echo "FEHLER: $ENTFERNER fehlt" >&2; exit 2; }
 command -v gh >/dev/null || { echo "FEHLER: gh nicht gefunden" >&2; exit 2; }
-python3 -c "import yaml" 2>/dev/null || {
-  echo "FEHLER: python3 findet kein pyyaml — die Gegenprobe im Entferner" >&2
-  echo "        laeuft dann nicht. pip install pyyaml" >&2
+# Python-Interpreter bestimmen, statt `python3` fest zu verdrahten. Unter Git
+# Bash auf Windows gibt es `python3` nicht zwingend — dort heisst die Datei oft
+# nur `python.exe`, und das Skript waere mit «command not found» ausgestiegen,
+# obwohl ein taugliches Python da ist. Umgekehrt ist `python` auf manchen
+# Systemen noch Python 2 und auf Windows ohne Installation ein Store-Stub, der
+# bloss eine Werbeseite oeffnet. Deshalb wird jeder Kandidat zusaetzlich
+# gefragt, ob er wirklich Python 3 ist.
+PY=""
+for KANDIDAT in python3 python py; do
+  command -v "$KANDIDAT" >/dev/null 2>&1 || continue
+  "$KANDIDAT" -c 'import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)' >/dev/null 2>&1 || continue
+  PY="$KANDIDAT"; break
+done
+[ -n "$PY" ] || {
+  echo "FEHLER: kein Python 3 gefunden (gesucht: python3, python, py)" >&2
+  exit 2; }
+
+"$PY" -c "import yaml" 2>/dev/null || {
+  echo "FEHLER: $PY findet kein pyyaml — die Gegenprobe im Entferner laeuft" >&2
+  echo "        dann nicht. Installieren in genau diesen Interpreter:" >&2
+  echo "            $PY -m pip install pyyaml" >&2
   exit 2; }
 
 ARBEIT="$(mktemp -d)"
@@ -183,7 +204,7 @@ for R in "${REPOS[@]}"; do
   DATEI="$ZIEL/.github/dependabot.yml"
   [ -f "$DATEI" ] || { echo "  uebersprungen: keine dependabot.yml"; uebersprungen=$((uebersprungen+1)); continue; }
 
-  python3 "$ENTFERNER" "$DATEI"
+  "$PY" "$ENTFERNER" "$DATEI"
   case $? in
     0) : ;;
     1) echo "  uebersprungen: kein \`labels:\` vorhanden"; uebersprungen=$((uebersprungen+1)); continue ;;
