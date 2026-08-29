@@ -154,19 +154,21 @@ vier Prüfungen durch, Codex läuft an und kommt bis ans Ende. Nur trägt das
 Ergebnis keine der beiden Formen, an denen dieser Abschnitt es zu erkennen
 gelernt hat — kein Review-Objekt, keine Befundlos-Meldung.
 
-Getragen hat es hier die 👍 am PR, und das ist die Umkehrung des 23.8.: Damals
-kam in sechs Repos die Befundlos-Meldung und in keinem die Reaktion, hier kommt
-die Reaktion und keine Meldung. Die beiden Träger vertreten einander also nicht
+Getragen hat es beide Male die 👍 am PR — #41 und #42 tragen je eine, und
+beide Kommentare keine. Das ist die Umkehrung des 23.8.: Damals kam in sechs
+Repos die Befundlos-Meldung und in keinem die Reaktion, hier kommt zweimal die
+Reaktion und keine Meldung. Die beiden Träger vertreten einander also nicht
 verlässlich; wer nur einen davon abfragt, zählt je nach Tag Geprüftes als
 ungeprüft oder umgekehrt.
 
 Zwei Vorbehalte, beide unerledigt. Erstens ist **nicht belegt, dass die 👍 von
-Codex stammt** — `reactions` liefert nur die Zahl, nicht den Urheber; das
-klärt erst eine Abfrage, die die Reagierenden auflistet. Zweitens lief der
-ganze Review nach dem Merge: `closed_at` ist 08:52:19, der Lauf begann 08:52:22
-und endete 08:53:40. Ob Codex auf einem geschlossenen PR einen Befund noch
-absetzen würde, ist damit nicht geprüft — dieser Lauf hatte offenbar keinen.
-Ein Befund auf einem bereits gemergten PR bleibt der ungetestete Fall.
+Codex stammt** — `reactions` liefert nur die Zahl, nicht den Urheber; das klärt
+erst eine Abfrage, die die Reagierenden auflistet. Zweitens liefen beide Reviews
+vollständig nach dem Merge. Ob Codex auf einem geschlossenen PR einen Befund
+noch absetzen würde, ist damit nicht geprüft — keiner der beiden Läufe hatte
+offenbar einen. Zwei befundlose Läufe belegen zwei befundlose Läufe, nicht die
+Fähigkeit, einen Befund abzusetzen. Ein Befund auf einem bereits gemergten PR
+bleibt der ungetestete Fall.
 
 Bis dahin gilt: Eine `Completed`-Zeile belegt, dass ein Lauf stattfand — nicht,
 dass er nichts gefunden hat. Wer sie als Freigabe liest, hat die Frage, die
@@ -234,13 +236,17 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist seit dem 29.8. gemessen: **78 Sekunden** von `Running` bis
-`Completed` (PR #41 dieses Repos, 08:52:22 → 08:53:40). Der Merge lag davor —
-`closed_at` 08:52:19 —, der Lauf begann also drei Sekunden nach dem Merge und
-lief vollständig auf einem geschlossenen PR. Er wurde dabei nicht abgebrochen:
-Der Merge nimmt einem nicht den Lauf, sondern nur die Gelegenheit, sein
-Ergebnis vor dem Merge zu sehen und darauf zu reagieren. Wer wartet, wartet
-also auf gut eine Minute und nicht auf Sekunden.
+Wie viel Zeit, ist am 29.8. zweimal gemessen: **78 und 62 Sekunden** von
+`Running` bis `Completed` — PR #41 dieses Repos 08:52:22 → 08:53:40, PR #42
+09:00:08 → 09:01:09. Zwei Messungen sind keine Verteilung; wer wartet, sollte
+mit gut einer Minute rechnen und nicht mit Sekunden, und die 78 nicht für eine
+Obergrenze halten.
+
+Beide Male lag der Merge davor — `closed_at` 08:52:19 und 09:00:06 —, der Lauf
+begann also zwei bis drei Sekunden nach dem Merge und lief vollständig auf
+einem geschlossenen PR. Abgebrochen wurde er dabei nicht: Der Merge nimmt einem
+nicht den Lauf, sondern nur die Gelegenheit, sein Ergebnis vor dem Merge zu
+sehen und darauf zu reagieren.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
