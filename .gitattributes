@@ -1,0 +1,33 @@
+# Zeilenenden festnageln, statt sie dem Klon zu ueberlassen.
+#
+# Git fuer Windows setzt `core.autocrlf=true` als Vorgabe und checkt Textdateien
+# dort mit CRLF aus. Fuer ein Shell-Skript ist das toedlich — bash liest das
+# `\r` als Teil des Befehls:
+#
+#     set: pipefail: invalid option name
+#     $'\r': command not found
+#     syntax error near unexpected token `$'in\r''
+#
+# Am 29.8.2026 beim ersten Anlauf des Portfolio-Laufs genau so passiert. Im
+# Repo lagen die Dateien mit LF; der Schaden entsteht erst beim Auschecken,
+# und deshalb faellt er in keiner CI auf — die laeuft auf Linux, wo nicht
+# konvertiert wird. Ohne diese Datei ist der Fehler auf der Maschine, auf der
+# das Skript benutzt wird, gar nicht zu sehen und auf der, die ihn pruefen
+# koennte, gar nicht vorhanden.
+*.sh text eol=lf
+
+# Python, YAML und Markdown vertragen CRLF, aber ein gemischter Baum erzeugt
+# Diffs, die niemand verursacht hat: Wer eine Datei auf Windows anfasst, gibt
+# sie mit umgeschriebenen Zeilenenden zurueck und der Diff zeigt die ganze
+# Datei. Dieselbe Falle, gegen die `entferne_dependabot_labels.py` byteweise
+# liest und schreibt.
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+
+# Aufgezeichnete Antworten werden byteweise mit dem Original verglichen. Ein
+# CRLF-Checkout wuerde den Vergleich verschieben, ohne dass jemand die Datei
+# angefasst hat.
+*.json text eol=lf

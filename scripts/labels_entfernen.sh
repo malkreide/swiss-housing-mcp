@@ -17,8 +17,20 @@
 # unter AUSNAHMEN steht.
 #
 # VORAUSSETZUNGEN
-#   - eine Bash. Unter Windows heisst das Git Bash oder WSL, nicht PowerShell:
-#     dort ist `./labels_entfernen.sh` kein Befehl, sondern ein Dateiname.
+#   - eine Bash. Unter Windows heisst das Git Bash, nicht PowerShell: dort ist
+#     `./labels_entfernen.sh` kein Befehl, sondern ein Dateiname. Man muss die
+#     Konsole aber nicht wechseln, `bash` ist aus PowerShell aufrufbar:
+#
+#         & 'C:\Program Files\Git\bin\bash.exe' ./labels_entfernen.sh --dry-run
+#
+#     Den vollen Pfad nehmen, nicht bloss `bash`. Unter Windows liegt in
+#     `C:\Windows\System32\bash.exe` der WSL-Starter, und der bringt eine
+#     eigene Umgebung mit — ohne den `gh`-Login und ohne das Python, die auf
+#     der Windows-Seite eingerichtet sind.
+#
+#     Diese Datei muss dafuer LF-Zeilenenden haben; `.gitattributes` im
+#     Repo-Wurzelverzeichnis sorgt dafuer. Mit CRLF steigt bash schon in
+#     Zeile 1 aus.
 #   - `gh` angemeldet mit Schreibrecht auf die Repos
 #   - `entferne_dependabot_labels.py` im selben Verzeichnis wie dieses Skript
 #   - Python 3 mit `pyyaml` (das Entfernen-Skript verweigert ohne die
