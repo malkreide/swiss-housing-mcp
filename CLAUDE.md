@@ -95,7 +95,8 @@ Meldung liefen ganz ohne Codex-Auslöser, dort hat niemand gemessen.
 In der Zwischenzeit sind 32 PRs mit formal erfülltem Häkchen gemergt worden,
 ohne dass jemand hineingesehen hat, und am 22.8. noch einmal 43.
 
-**Vier** Gründe, warum Codex schweigt, und nur einer davon ist harmlos:
+**Fünf** Gründe, warum unter einem PR kein Befund steht. Harmlos sind zwei —
+und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
 
 - **Kein Befund** — dann schreibt er einen gewöhnlichen Issue-Kommentar:
 
@@ -105,9 +106,14 @@ ohne dass jemand hineingesehen hat, und am 22.8. noch einmal 43.
 
   Der Schlusssatz wechselt bei jedem Lauf («Delightful!», «Keep it up!»,
   «More of your lovely PRs please.»); stabil ist nur der Satz davor. Der
-  Infokasten, den Codex unter jeden Review setzt, behauptet weiterhin eine
-  Reaktion («otherwise it will react with 👍») — am 23.8. kam in sechs Repos
-  die Meldung und in keinem die Reaktion. Der Kasten ist keine Quelle.
+  Infokasten, den Codex unter jeden Review setzt, behauptet eine Reaktion, und
+  sein Wortlaut hat sich geändert — am 23.8. «otherwise it will react with 👍»,
+  am 29.8. ausführlicher: «reacts with 👀 while any review is running, comments
+  if it has suggestions, and reacts with 👍 once all reviews finish with no
+  findings». Am 23.8. kam in sechs Repos die Meldung und in keinem die
+  Reaktion; am 29.8. kam die Reaktion und keine Meldung. Der Kasten trifft
+  damit weder das eine noch das andere zuverlässig — er ist keine Quelle, auch
+  nicht in seiner neuen Fassung.
 - **Der PR ist ein Draft** — darauf läuft Codex nicht an.
 - **Das Kontingent ist weg** — dann schreibt er die Meldung oben.
 - **Für das Repo fehlt eine Environment** — dann schreibt er:
@@ -115,6 +121,24 @@ ohne dass jemand hineingesehen hat, und am 22.8. noch einmal 43.
   ```
   To use Codex here, create an environment for this repo.
   ```
+- **Der Lauf geht durch, aber das Urteil steht nicht dort, wo man es sucht** —
+  dann steht unter dem PR eine Statustabelle, die sich selbst fortschreibt:
+
+  ```
+  ## Codex Review Summary
+
+  | Review | Status | Commit | Review trigger |
+  | 📝 Code Review | ✅ Completed 2026-08-29T08:53:40Z | 5a3e61e | Draft marked ready |
+  ```
+
+  Am 29.8. in diesem Repo, PR #41: Die Statuszeile stand um 08:52:22 auf
+  `🔄 Running` und um 08:53:40 auf `✅ Completed` — ein Lauf von 78 Sekunden,
+  vollständig durchgezogen. Dazu gibt es **kein** Review-Objekt und **keine**
+  Befundlos-Meldung: `get_reviews` bleibt leer, `get_comments` liefert genau
+  diesen einen Kommentar, und der Kommentar selbst trägt keine Reaktion. Der
+  **PR** trägt dagegen eine 👍 (`reactions.total_count: 1`) — die Reaktion sitzt
+  also am PR, nicht am Kommentar, und wer nur den Kommentar abfragt, sieht sie
+  nicht.
 
 Der vierte kam erst zum Vorschein, als der dritte wegfiel, und das ist kein
 Zufall: Die Prüfungen liegen hintereinander. Dass es diese Reihenfolge ist und
@@ -125,10 +149,35 @@ Environment-Prüfung vorn, hätte #54 sie schon am Vortag gesehen; die Environme
 fehlte ja bereits. Zwei Meldungen aus demselben Repo schlagen hier jede
 Vermutung über die Reihenfolge.
 
+Der fünfte steht nicht in dieser Kette, sondern dahinter: Bei ihm sind alle
+vier Prüfungen durch, Codex läuft an und kommt bis ans Ende. Nur trägt das
+Ergebnis keine der beiden Formen, an denen dieser Abschnitt es zu erkennen
+gelernt hat — kein Review-Objekt, keine Befundlos-Meldung.
+
+Getragen hat es hier die 👍 am PR, und das ist die Umkehrung des 23.8.: Damals
+kam in sechs Repos die Befundlos-Meldung und in keinem die Reaktion, hier kommt
+die Reaktion und keine Meldung. Die beiden Träger vertreten einander also nicht
+verlässlich; wer nur einen davon abfragt, zählt je nach Tag Geprüftes als
+ungeprüft oder umgekehrt.
+
+Zwei Vorbehalte, beide unerledigt. Erstens ist **nicht belegt, dass die 👍 von
+Codex stammt** — `reactions` liefert nur die Zahl, nicht den Urheber; das
+klärt erst eine Abfrage, die die Reagierenden auflistet. Zweitens lief der
+ganze Review nach dem Merge: `closed_at` ist 08:52:19, der Lauf begann 08:52:22
+und endete 08:53:40. Ob Codex auf einem geschlossenen PR einen Befund noch
+absetzen würde, ist damit nicht geprüft — dieser Lauf hatte offenbar keinen.
+Ein Befund auf einem bereits gemergten PR bleibt der ungetestete Fall.
+
+Bis dahin gilt: Eine `Completed`-Zeile belegt, dass ein Lauf stattfand — nicht,
+dass er nichts gefunden hat. Wer sie als Freigabe liest, hat die Frage, die
+dieser Abschnitt stellt, mit dem Beleg beantwortet, dass überhaupt jemand
+hingesehen hat.
+
 Praktisch heisst das: **Eine verschwundene Limit-Meldung ist keine Entwarnung.**
 Sie kann bedeuten, dass das Kontingent wieder da ist — und dass jetzt etwas
 anderes den Review verhindert. Belegt ist eine Prüfung erst durch ein
-Review-Objekt **oder** eine Befundlos-Meldung. Wer nur das Objekt gelten lässt,
+Review-Objekt **oder** eine Befundlos-Meldung; eine `Completed`-Zeile belegt
+den Lauf, aber nicht sein Urteil. Wer nur das Objekt gelten lässt,
 zählt jeden befundlosen Review als ungeprüft — und baut sich denselben Fehlalarm
 ein, den dieser Abschnitt verhindern soll, nur in die andere Richtung.
 
@@ -140,17 +189,29 @@ Issue-Kommentare und trennen sich nur im Text. Beim Draft gibt es überhaupt
 nichts, weil Codex nicht anläuft; ein kommentarloser Draft ist deshalb kein
 Beleg, sondern ein nicht durchgeführter Test.
 
+Die Statustabelle ist ebenfalls ein gewöhnlicher Issue-Kommentar, unterscheidet
+sich von den dreien aber in einem Punkt, der beim Nachsehen zählt: Sie wird
+**in place fortgeschrieben**. Derselbe Kommentar trug um 08:52:23 `Running` und
+um 08:53:44 `Completed`; `created_at` bleibt dabei stehen, nur `updated_at`
+wandert. Wer einmal hinsieht, liest einen Zwischenstand und hält ihn für das
+Ergebnis — genau so ist hier zuerst «der Review hat nicht stattgefunden»
+herausgekommen, obwohl er 78 Sekunden später fertig war. Also `updated_at`
+mitlesen und bei `Running` erneut abfragen, statt den ersten Blick zu buchen.
+
 Das sind verschiedene Abfragen — `get_reviews` fürs Objekt, `get_comments` für
-alles andere; wer nur eine nimmt, übersieht den Rest. Genau so ist die
-Limit-Meldung zuerst durchgerutscht.
+die Kommentare, und für die Reaktion am PR eine dritte (`issue_read`/`get` auf
+dieselbe Nummer, Feld `reactions`); wer nur eine nimmt, übersieht den Rest.
+Genau so ist die Limit-Meldung zuerst durchgerutscht, und genau so wäre am
+29.8. die 👍 durchgerutscht: Der Kommentar trug keine, der PR schon.
 
 Der Kommentarzähler allein reicht ohnehin nicht: `comments: 1` kann die
-Befundlos-, die Kontingent- **oder** die Environment-Meldung sein — drei
-gegensätzliche Bedeutungen unter derselben Zahl. Den Text lesen, nicht die Zahl.
-Und einen unbekannten vierten Text wörtlich zitieren, statt ihn in eine der
-bekannten Schubladen zu zwingen: Dieser Abschnitt musste schon einmal von drei
-auf vier Gründe wachsen, und die 👍-Reaktion stand hier zwei Fassungen lang als
-Tatsache.
+Befundlos-, die Kontingent-, die Environment-Meldung **oder** eine Statustabelle
+sein — vier gegensätzliche Bedeutungen unter derselben Zahl, und die letzte
+wechselt ihre Bedeutung sogar, ohne dass die Zahl sich rührt. Den Text lesen,
+nicht die Zahl. Und einen unbekannten Text wörtlich zitieren, statt ihn in eine
+der bekannten Schubladen zu zwingen: Dieser Abschnitt musste erst von drei auf
+vier und dann auf fünf Gründe wachsen, und die 👍-Reaktion stand hier zwei
+Fassungen lang als Tatsache.
 
 Und ein befundloser Lauf ist kein Freispruch. Am 23.8. lief derselbe Text durch
 42 Reviews: 36 meldeten denselben P2-Befund, 6 die Befundlos-Meldung — gleiche
@@ -172,6 +233,14 @@ mergen. Am 21./22.8. lagen zwischen «ready for review» und Merge mehrfach drei
 bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst und
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
+
+Wie viel Zeit, ist seit dem 29.8. gemessen: **78 Sekunden** von `Running` bis
+`Completed` (PR #41 dieses Repos, 08:52:22 → 08:53:40). Der Merge lag davor —
+`closed_at` 08:52:19 —, der Lauf begann also drei Sekunden nach dem Merge und
+lief vollständig auf einem geschlossenen PR. Er wurde dabei nicht abgebrochen:
+Der Merge nimmt einem nicht den Lauf, sondern nur die Gelegenheit, sein
+Ergebnis vor dem Merge zu sehen und darauf zu reagieren. Wer wartet, wartet
+also auf gut eine Minute und nicht auf Sekunden.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
