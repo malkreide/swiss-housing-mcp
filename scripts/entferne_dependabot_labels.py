@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""`labels:` aus einer `.github/dependabot.yml` entfernen — inline wie Block.
+r"""`labels:` aus einer `.github/dependabot.yml` entfernen — inline wie Block.
 
 Hintergrund: Dependabot legt Labels nicht an. Steht unter `labels:` ein Name,
 den das Repo nicht kennt, haengt es nur einen Kommentar an jeden Pull Request
@@ -23,6 +23,25 @@ Geschrieben wird zeilenweise und nicht ueber einen YAML-Round-Trip: der
 wuerde Kommentare und Formatierung verlieren, und genau die sind hier der
 wertvollste Teil der Datei — sie traegt in mehreren Repos einen langen
 erklaerenden Kopf.
+
+Ein- und Ausgabe laufen ueber `read_bytes`/`write_bytes`, nicht ueber
+`read_text`/`write_text`. Deren Textmodus uebersetzt Zeilenenden: Lesen macht
+aus `\r\n` ein `\n`, Schreiben macht aus `\n` wieder `os.linesep`. Auf Windows
+kommt eine LF-Datei damit als CRLF zurueck, auf Linux eine CRLF-Datei als LF —
+in beiden Faellen zeigt der Diff die ganze Datei als geaendert statt der drei
+entfernten Zeilen, und das in jedem Repo des Portfolios.
+
+Byteweise gelesen und geschrieben, gibt es nichts zu uebersetzen — auf jedem
+Betriebssystem und in jeder Python-Version gleichermassen. Das ist hier mehr
+wert als ein `newline=""`: Dessen Wirkung beim Schreiben laesst sich auf Linux
+gar nicht pruefen, weil dort ohnehin nicht uebersetzt wird, und `read_text`
+kennt den Parameter ausserdem erst ab 3.13 — die CI faehrt auch 3.11 und 3.12,
+dort ist der Aufruf ein TypeError (gemessen, nicht vermutet).
+
+Der Vergleich unten streift `\r\n` ab und nicht nur `\n`. Das ist Absicht,
+aber nicht tragend: Die Muster wuerden ein haengendes `\r` ohnehin schlucken,
+weil `\s*` es frisst. Es steht da, damit man beim Lesen nicht erst darauf
+kommen muss.
 
 GEPRUEFT wird dagegen sehr wohl mit einem YAML-Parser, und zwar semantisch:
 das Ergebnis muss parsen, es darf kein `labels:` mehr enthalten, und es muss
@@ -64,7 +83,7 @@ def _folgt_noch_ein_eintrag(lines: list[str], j: int, indent: int) -> int | None
     erklaert, bleibt stehen.
     """
     while j < len(lines):
-        nackt = lines[j].rstrip("\n")
+        nackt = lines[j].rstrip("\r\n")
         if not nackt.strip() or _KOMMENTAR.match(nackt):
             j += 1
             continue
@@ -86,7 +105,7 @@ def entferne_labels(text: str) -> tuple[str, int]:
     i = 0
     while i < len(lines):
         line = lines[i]
-        nackt = line.rstrip("\n")
+        nackt = line.rstrip("\r\n")
 
         if _LABELS_INLINE.match(nackt):
             entfernt += 1
@@ -99,7 +118,7 @@ def entferne_labels(text: str) -> tuple[str, int]:
             entfernt += 1
             i += 1
             while i < len(lines):
-                roh = lines[i].rstrip("\n")
+                roh = lines[i].rstrip("\r\n")
                 m = _LIST_ITEM.match(roh)
                 if m and len(m.group(1)) >= indent:
                     i += 1
@@ -176,7 +195,7 @@ def main() -> int:
             print(f"{pfad}: nicht vorhanden", file=sys.stderr)
             fehler += 1
             continue
-        alt = pfad.read_text(encoding="utf-8")
+        alt = pfad.read_bytes().decode("utf-8")
         neu, n = entferne_labels(alt)
 
         if n == 0:
@@ -212,7 +231,7 @@ def main() -> int:
             zeilen = len(alt.splitlines()) - len(neu.splitlines())
             print(f"{pfad}: {n} `labels:`-Schluessel wuerden entfernt ({zeilen} Zeilen)")
         else:
-            pfad.write_text(neu, encoding="utf-8")
+            pfad.write_bytes(neu.encode("utf-8"))
             print(f"{pfad}: {n} `labels:`-Schluessel entfernt")
 
     if fehler:

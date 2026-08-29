@@ -330,5 +330,96 @@ class ExitCodeTest(unittest.TestCase):
             self.assertEqual(pfad.read_text(encoding="utf-8"), inhalt)
 
 
+class ZeilenendenTest(unittest.TestCase):
+    """Die Datei verliert die `labels:`-Zeilen — und sonst kein einziges Byte.
+
+    `read_text`/`write_text` uebersetzen Zeilenenden per Vorgabe: Einlesen
+    macht aus `\\r\\n` ein `\\n`, Schreiben macht daraus wieder `os.linesep`.
+    Auf Windows kommt eine LF-Datei damit als CRLF zurueck, auf Linux
+    umgekehrt. Beides macht aus «drei Zeilen entfernt» ein «ganze Datei
+    geaendert», und der Lauf ueber das Portfolio wuerde vierzig solche Diffs
+    erzeugen, ohne dass ein Gate anschlaegt.
+
+    Geprueft wird deshalb byteweise und in beide Richtungen — eine
+    CRLF-Datei bleibt CRLF, eine LF-Datei bleibt LF.
+
+    Was diese Tests belegen und was nicht, gehoert dazu. Rot wird hier nur
+    die Lese-Richtung: Nimmt man die byteweise Eingabe wieder heraus, fallen
+    die beiden CRLF-Tests. `test_lf_bleibt_lf` dagegen geht auf Linux auch
+    ohne jede Korrektur durch, weil `os.linesep` dort `\\n` ist — er kann die
+    Windows-Richtung nicht widerlegen, sondern haelt sie nur fest.
+
+    Dass die Schreib-Richtung trotzdem sicher ist, traegt nicht dieser Test,
+    sondern die Bauweise: `write_bytes` uebersetzt auf keinem Betriebssystem
+    etwas. Eine Zusicherung, die auf der Testmaschine gar nicht falsch werden
+    kann, ist eben keine — hier ersetzt sie ein Verfahren, das die Frage nicht
+    mehr stellt.
+    """
+
+    RUMPF = (
+        b"# Kopf, der stehen bleiben muss\n"
+        b"version: 2\n"
+        b"updates:\n"
+        b'  - package-ecosystem: "pip"\n'
+        b'    labels: ["dependencies"]\n'
+        b"    schedule:\n"
+        b'      interval: "monthly"\n'
+    )
+    ERWARTET = (
+        b"# Kopf, der stehen bleiben muss\n"
+        b"version: 2\n"
+        b"updates:\n"
+        b'  - package-ecosystem: "pip"\n'
+        b"    schedule:\n"
+        b'      interval: "monthly"\n'
+    )
+
+    def lauf_auf_bytes(self, roh: bytes) -> bytes:
+        with tempfile.TemporaryDirectory() as tmp:
+            pfad = Path(tmp) / "dependabot.yml"
+            pfad.write_bytes(roh)
+            alt_argv = sys.argv
+            sys.argv = ["entferne_dependabot_labels.py", str(pfad)]
+            try:
+                self.assertEqual(edl.main(), 0)
+            finally:
+                sys.argv = alt_argv
+            return pfad.read_bytes()
+
+    def test_crlf_bleibt_crlf(self) -> None:
+        ergebnis = self.lauf_auf_bytes(self.RUMPF.replace(b"\n", b"\r\n"))
+        self.assertEqual(ergebnis, self.ERWARTET.replace(b"\n", b"\r\n"))
+
+    def test_lf_bleibt_lf(self) -> None:
+        self.assertEqual(self.lauf_auf_bytes(self.RUMPF), self.ERWARTET)
+
+    def test_crlf_im_blockform(self) -> None:
+        """Auch die Blockform: der Schnitt darf nicht am `\\r` vorbeigreifen.
+
+        Ohne `rstrip("\\r\\n")` endet die Schluesselzeile auf `labels:\\r`.
+        `_LABELS_BLOCK` traefe sie zwar noch, weil `\\s*` das `\\r` frisst —
+        aber darauf soll sich niemand verlassen muessen, und die Listenzeilen
+        haengen an derselben Frage.
+        """
+        roh = (
+            b"version: 2\n"
+            b"updates:\n"
+            b'  - package-ecosystem: "pip"\n'
+            b"    labels:\n"
+            b"      - dependencies\n"
+            b"      - python\n"
+            b"    schedule:\n"
+            b'      interval: "monthly"\n'
+        ).replace(b"\n", b"\r\n")
+        erwartet = (
+            b"version: 2\n"
+            b"updates:\n"
+            b'  - package-ecosystem: "pip"\n'
+            b"    schedule:\n"
+            b'      interval: "monthly"\n'
+        ).replace(b"\n", b"\r\n")
+        self.assertEqual(self.lauf_auf_bytes(roh), erwartet)
+
+
 if __name__ == "__main__":
     unittest.main()
