@@ -31,6 +31,13 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
     "respx>=0.21",
+    # Nur fuer scripts/entferne_dependabot_labels.py und seine Tests: Das
+    # Skript schneidet zeilenweise in eine YAML-Datei und prueft das Ergebnis
+    # anschliessend mit einem echten Parser gegen die Ausgangsdatei. Ohne
+    # diese Gegenprobe ist es blind fuer den Fall, der es kaputt macht — ein
+    # Kommentar zwischen `labels:` und seiner Liste laesst die Eintraege
+    # verwaist zurueck. Der Server selbst braucht pyyaml nicht.
+    "pyyaml>=6.0",
     # Exakter Pin, und die einzige Stelle, an der die ruff-Version steht. Als
     # hier eine Spanne stand, loeste ein dev-Install auf die jeweils neueste
     # Version auf, waehrend ci.yml `ruff==0.16.3` darueber installierte —
