@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 r"""`labels:` aus einer `.github/dependabot.yml` entfernen — inline wie Block.
 
-Hintergrund: Dependabot legt Labels nicht an. Steht unter `labels:` ein Name,
-den das Repo nicht kennt, haengt es nur einen Kommentar an jeden Pull Request
-und laesst ihn ungelabelt — kein roter Check, kein Log. Ein Gate dagegen kann
-es nicht geben, weil Labels GitHub-Zustand sind und kein Dateiinhalt.
+Hintergrund: `labels:` wegzulassen ist die staerkere Konfiguration. Ohne den
+Schluessel bekommt jeder Dependabot-PR ein `dependencies`-Label, bei mehreren
+Paketmanagern zusaetzlich eines fuers Oekosystem, und Dependabot legt diese
+Labels bei Bedarf selbst an. Eine eigene Liste ersetzt diesen Vorgabesatz;
+Namen, die das Repo nicht kennt, werden ignoriert und mit einem Kommentar an
+jedem Pull Request quittiert — ohne roten Check und ohne Log. Die Zeile war
+damit nicht wirkungslos, sondern schaedlich.
 
-Die Information ist ohnehin doppelt vorhanden: der Autor (`dependabot[bot]`),
-das Commit-Prefix (`deps`/`ci`/`docker`) und der Branchname nennen dasselbe.
+Ein Gate dagegen kann es nicht geben, weil Labels GitHub-Zustand sind und kein
+Dateiinhalt.
 
 Verwendung:
     python entferne_dependabot_labels.py --dry-run PFAD...   # nur zeigen

@@ -74,6 +74,27 @@ Drei Handgriffe daraus:
   dass nur der 400er aufgezeichnet war, ist der Grund, warum der falsche
   Befund nicht auffiel.
 
+**Dieselbe Falle bei einer Konfigurationsoption: die Vorgabe lesen, bevor man
+einen Schlüssel für wirkungslos hält.** Am 29.8.2026 fielen die `labels:`-Zeilen
+aus 22 `dependabot.yml` des Portfolios, begründet mit «Dependabot legt Labels
+nicht an». Eine Messung danach zeigte, dass `dependencies` in sieben von zehn
+geprüften Repos sehr wohl existiert — mit GitHubs Standardbeschreibung. Das las
+sich zuerst wie ein Beleg, dass die Aktion falsch war.
+
+Die Optionsreferenz kehrt es um: Ohne `labels:` vergibt Dependabot per Vorgabe
+`dependencies` plus ein Ökosystem-Label und *legt beide selbst an*; eine eigene
+Liste **ersetzt** diesen Satz, und «if any of these labels is not defined in the
+repository, it is ignored». Die Zeile war also nicht wirkungslos, sondern
+schädlich — sie tauschte einen sich selbst pflegenden Vorgabesatz gegen Namen,
+die das Repo grösstenteils nicht kannte. Die sieben Labels waren der Beleg
+*für* die Aktion, nicht dagegen.
+
+Zweimal falsch eingeordnet, in beide Richtungen: erst die Zeile für bloss
+wirkungslos gehalten, dann die gefundenen Labels für einen Widerspruch. Beide
+Male hätte ein Blick in die Spec statt in den Zustand genügt. Und beim Aufräumen
+gilt dieselbe Frage wie bei `lotId`: Was ist die *Vorgabe*, wenn man das Ding
+weglässt — nicht bloss, ob der aktuelle Wert etwas bewirkt.
+
 **`results[0]` ist nur so verlässlich wie die Zusicherung danach.** Pinnt die
 Abfrage einen bekannten Datensatz, ist der erste Treffer eine Drift-Wache und
 in Ordnung. Hängt die Zusicherung dagegen davon ab, *welche* Variante die
