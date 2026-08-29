@@ -19,8 +19,7 @@
 # Python, YAML und Markdown vertragen CRLF, aber ein gemischter Baum erzeugt
 # Diffs, die niemand verursacht hat: Wer eine Datei auf Windows anfasst, gibt
 # sie mit umgeschriebenen Zeilenenden zurueck und der Diff zeigt die ganze
-# Datei. Dieselbe Falle, gegen die `entferne_dependabot_labels.py` byteweise
-# liest und schreibt.
+# Datei.
 *.py text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf

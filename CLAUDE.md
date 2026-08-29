@@ -375,8 +375,8 @@ Der Block setzt `pip install -e ".[dev]"` voraus; die CI setzt für Import-,
 Unit- und Live-Schritt zusätzlich `PYTHONPATH=src`.
 
 **Die ruff-Gates decken `scripts/` mit** — bis zum Commit «ci: `scripts/` in
-den ruff-Scope nehmen» nicht, und von den inzwischen vier Dateien dort sind
-zwei selbst CI-Gates (`check_version_sync.py`, `check_ruff_pin.py`). Kein
+den ruff-Scope nehmen» nicht, und von den Dateien dort sind zwei selbst
+CI-Gates (`check_version_sync.py`, `check_ruff_pin.py`). Kein
 `include` unter `[tool.ruff]` setzen: der Umfang der genannten Pfade stimmt
 (nachgemessen, eine Sonde in `tests/` lässt beide Gates fallen).
 
