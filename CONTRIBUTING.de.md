@@ -93,7 +93,7 @@ Seien Sie respektvoll und konstruktiv. Dies ist ein kleines Open-Source-Projekt,
 **Kadenz:** täglich um 03:29 UTC, dazu jederzeit von Hand über *Actions → CI → Run
 workflow*. Siehe [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
-**Wer es sieht:** Ein roter Lauf öffnet ein Issue mit dem Label `upstream` und dem stabilen Titel «Live-Tests gegen public.madd.bfs.admin.ch rot (<Datum>)». Ein zweiter roter Lauf erkennt das offene Issue am Titelanfang und hängt sich an denselben Thread, statt ein zweites aufzumachen. Wird die Suite wieder grün, schliesst sich das Issue selbst.
+**Wer es sieht:** Ein roter Lauf öffnet ein Issue mit dem Label `upstream` und dem stabilen Titelanfang «Live-Tests gegen die GWR-Quellen rot». Ein zweiter roter Lauf erkennt das offene Issue am Titelanfang und hängt sich an denselben Thread, statt ein zweites aufzumachen. Wird die Suite wieder grün, schliesst sich das Issue selbst.
 
 **Drei Antworten, nicht zwei.** `scripts/classify_live_run.py` liest das JUnit-XML statt des
 Exit-Codes und unterscheidet: `clear` (gelaufen, grün), `finding` (gelaufen,

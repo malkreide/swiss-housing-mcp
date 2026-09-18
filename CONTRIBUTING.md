@@ -93,7 +93,7 @@ Be respectful and constructive. This is a small open-source project maintained i
 **Cadence:** daily at 03:29 UTC, plus on demand via *Actions → CI → Run
 workflow*. See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
-**Who sees it:** A red run opens an issue labelled `upstream` and the stable title “Live-Tests gegen public.madd.bfs.admin.ch rot (<Datum>)”. A second red run recognises the open issue by its title prefix and appends to that same thread rather than opening a second one. Once the suite is green again, the issue closes itself.
+**Who sees it:** A red run opens an issue labelled `upstream` and the stable title prefix “Live-Tests gegen die GWR-Quellen rot”. A second red run recognises the open issue by its title prefix and appends to that same thread rather than opening a second one. Once the suite is green again, the issue closes itself.
 
 **Three answers, not two.** `scripts/classify_live_run.py` reads the JUnit XML rather than
 the exit code and separates `clear` (ran, green), `finding` (ran, something
