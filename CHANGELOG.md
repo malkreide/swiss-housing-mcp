@@ -7,6 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`dump_status` galt in der Anleitung als dump-gestuetzt — es holt keinen
+  Dump** (P2-Befund von Codex auf PR #56). Der Satz «The remaining tools read a
+  cantonal dump that is fetched on first use» nannte kein einziges Werkzeug und
+  schloss damit `dump_status` ein.
+
+  Das ist nicht bloss ungenau, es kehrt den Zweck des Werkzeugs um:
+  `dump_status` ist der Einstieg, wenn die Quelle ausgefallen scheint, und ruft
+  nur `store.status()` auf. Ein Client, der die Formel las, musste annehmen,
+  auch dieser Aufruf kontaktiere die Quelle — und haette ihn ausgerechnet
+  waehrend einer Stoerung gemieden. Die Anleitung nennt jetzt die sechs
+  dump-gestuetzten Werkzeuge einzeln und nimmt `dump_status` ausdruecklich aus.
+
+- **Die BFS-Aufloesung wurde ohne ihre Grenze beschrieben** (P2-Befund von
+  Codex auf PR #56). `_canton_for_municipality` durchsucht nur Dumps, die in
+  diesem Prozess bereits gecacht sind, und faellt dann auf einen Seed zurueck,
+  der genau BFS 261 kennt. Auf kaltem Cache scheitert sie also fuer jede andere
+  Gemeinde, ohne irgendetwas zu laden.
+
+  Der Text sagte «pass `canton` only if that resolution fails» und schickte
+  damit jeden Aufrufer ausserhalb Zuerichs zuerst in einen garantiert
+  vergeblichen Aufruf. Die Grenze steht jetzt dort, und die Empfehlung lautet,
+  einen bekannten Kanton gleich mitzugeben.
+
+- **Die Kanton-Regel in `instructions` stimmte fuer drei von sechs Werkzeugen**
+  (P2-Befund von Codex auf PR #55). Der Text fasste fuenf Werkzeuge als «die
+  statistischen Tools» zusammen und gab eine Regel dazu: «pass `canton`
+  explicitly when a BFS number cannot be resolved».
+
+  `lookup_dwellings`, `buildings_in_bbox` und `explain_code` loesen aber gar
+  nichts auf — sie tragen `canton: str = "zh"`. Wer der Regel folgte und
+  `canton` wegliess, befragte fuer einen EGID aus einem anderen Kanton den
+  Zuercher Dump. Der antwortet nicht mit einem Fehler, sondern mit nichts:
+  dieselbe Klasse stiller Fehlbefund, gegen die `dump_status` ueberhaupt
+  existiert. Codex nannte zwei der drei Faelle; `explain_code` ist der dritte
+  derselben Klasse und beim Nachmessen dazugekommen.
+
+  Die Anleitung trennt jetzt beide Gruppen und nennt die Folge, nicht nur die
+  Anweisung — eine Regel ohne Folge wird unter Kontextdruck wegoptimiert.
+
+- **`tests/test_instructions.py`: die Anleitung gegen die Werkzeuge geprueft.**
+  Prosa verrottet geraeuschlos, und ein Werkzeug, das spaeter mit
+  `canton: str = "zh"` dazukommt, wuerde die korrigierte Anleitung wieder
+  falsch machen, ohne dass es jemand merkt.
+
+  Die beiden Gruppen stehen deshalb **nicht** im Test, sondern werden aus dem
+  Werkzeug-Schema abgeleitet, das der Client sieht: `default: "zh"` heisst
+  keine Aufloesung, `default: null` heisst Aufloesung aus der BFS-Nummer. Eine
+  Liste im Test waere eine zweite Kopie, die mit derselben Berechtigung driftet
+  wie der Prosatext, den sie sichern soll.
+
+  Nach den beiden Befunden oben deckt das Gate auch die dump-gestuetzte Menge
+  ab — abgeleitet per `ast` aus dem Quelltext: ein Werkzeug gilt als
+  dump-gestuetzt, wenn sein Rumpf `ensure_dump` aufruft. Ueber `ast` und nicht
+  ueber `inspect.getsource`, weil das, was der `@mcp.tool`-Dekorator
+  zurueckgibt, Sache des SDK ist und sich mit einem Bump aendern kann; der
+  Quelltext kann das nicht.
+
+  Gegenprobe, jede Sonde einzeln:
+
+  | Sonde | fallende Tests |
+  |---|---|
+  | alter Kanton-Text | alle 6 der ersten Fassung |
+  | «The remaining tools» zurueck | die beiden Dump-Zusicherungen |
+  | `dump_status` als dump-gestuetzt genannt | `..._kein_dumploses_werkzeug_...` |
+  | Grenze der Aufloesung weggelassen | `..._die_aufloesung_nennt_ihre_grenze` |
+  | neues Werkzeug mit `canton: str = "zh"`, ungenannt | genau eine |
+  | neues Werkzeug mit `ensure_dump`, ungenannt | zwei |
+
 ### Added
 
 - **Spec `2026-07-28` nativ: Identitaet auf der modernen Aera, und beide Aeren
