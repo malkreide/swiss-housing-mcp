@@ -297,7 +297,7 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   kurze etwas anderes, das schon am Draft anschlägt. Zu den zwei Töpfen (siehe
   unten) passt es ebenfalls: Jeder Pfad meldet den seinen.
 
-  Derselbe Tag hat die Zuordnung noch sechsmal bestätigt — mit einem dritten
+  Derselbe Tag hat die Zuordnung noch siebenmal bestätigt — mit einem dritten
   Auslöser und, ungeplant, mit einer **zweiten vollständigen Kontrolle**:
 
   | Zeit | Auslöser | Fassung | Latenz |
@@ -308,9 +308,10 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   | 14:17:53 | PR #61 als Draft angelegt | kurz | 11 s |
   | 14:20:47 | **derselbe** PR #61 auf ready gesetzt | lang | ~3 s |
   | 14:24:48 | PR #62 auf ready gesetzt | lang | ~1 s |
+  | 14:36:35 | PR #63 auf ready gesetzt | lang | ~3 s |
 
-  Die letzte Zeile hat kein Gegenstück: Das Anlegen von #62 als Draft um
-  14:23:46 blieb ohne Meldung (siehe weiter unten).
+  Die letzten zwei Zeilen haben kein Gegenstück: Das Anlegen von #62 und #63
+  als Draft blieb beide Male ohne Meldung (siehe weiter unten).
 
   Die letzten zwei Zeilen sind der Aufbau der Tabelle oben, noch einmal und an
   einem anderen PR: gleicher PR, gleiches Konto, gleicher Kontingentstand, zwei
@@ -328,9 +329,11 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   Aus der langen Fassung darauf zurückzuschliessen wäre zirkulär — sie ist ja
   das, was belegt werden soll.
 
-  Bleiben acht belegte Fälle an einem Tag: zweimal Draft (kurz), dreimal
+  Bleiben neun belegte Fälle an einem Tag: zweimal Draft (kurz), viermal
   «ready» (lang), dreimal Kommentar (lang). Keiner widerspricht der Zuordnung,
-  und sie ruht jetzt auf **zwei** unabhängigen Kontrollen statt einer.
+  und sie ruht jetzt auf **zwei** unabhängigen Kontrollen statt einer. Die
+  Drafts, die gar nichts bekamen, sind hier nicht mitgezählt — sie sagen über
+  die Zuordnung der Fassungen nichts und stehen weiter unten für sich.
 
   Was das nicht leistet: Beide Kontrollen liefen unter erschöpftem Kontingent.
   Sie verdoppeln die Evidenz für die Zuordnung, nicht die für ihre Ursache —
@@ -338,7 +341,7 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
 
   Nebenbei fällt eine Zeitmarke ab: Die Absage kommt in derselben
   Grössenordnung wie die Statustabelle beim Erfolg (9 bis 11 s, siehe unten) —
-  sechsmal gemessen zwischen rund 1 und 11 Sekunden. Die Untergrenze stand
+  siebenmal gemessen zwischen rund 1 und 11 Sekunden. Die Untergrenze stand
   hier erst bei 3 s und rutschte mit der nächsten Messung auf 1 s (PR #62:
   Ready 14:24:47, Meldung 14:24:48). Beide sind die unschärfsten der Reihe:
   Sie messen gegen den Zeitpunkt des Ready-Ereignisses aus dem Webhook, nicht
@@ -378,11 +381,55 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   danach. Der Draft trug also **mindestens 30 Sekunden** keinen Kommentar —
   gegen 11 Sekunden bei #57 und #61.
 
-  Damit steht die Zeile «Draft → kurz» nicht mehr ohne Ausnahme da: Zwei Drafts
-  bekamen die kurze Fassung, einer gar nichts. Was den dritten unterscheidet,
-  geben diese Beobachtungen nicht her — und das Ready hat die Frage
-  abgeschnitten, bevor sie zu Ende beobachtet war. Ein Draft, den man einfach
-  liegen lässt, würde sie beantworten.
+  Die Frage, was den stillen Draft vom redenden unterscheidet, ist inzwischen
+  beantwortet, und die Antwort stellt die Zeile «Draft → kurz» richtig. Sechs
+  Draft-Anlagen desselben Tages, alle unter erschöpftem Kontingent:
+
+  | Draft | angelegt | Ausgang |
+  |---|---|---|
+  | #57 | 06:46:46 | **kurze Fassung** nach 11 s |
+  | #58 | 07:54:39 | still bis zum Ready (~2 min 37 s) |
+  | #59 | 08:23:59 | still bis zum Ready (~7 min 46 s) |
+  | #61 | 14:17:53 | **kurze Fassung** nach 11 s |
+  | #62 | 14:23:46 | still bis zum Ready (≥ 30 s) |
+  | #63 | 14:33:19 | still bis zum Ready (193 s) |
+
+  Bei #63 ist die Stille hart belegt und nicht bloss begrenzt: Der einzige
+  Kommentar des PR trägt `created_at` 14:36:35 und damit einen Zeitpunkt
+  **nach** dem Ready um 14:36:32. In den 193 Sekunden davor kam nichts.
+
+  Die erste Lesart drängt sich auf und ist falsch: «kurz nur bis 14:17, danach
+  nie wieder» passt auf die letzten drei Zeilen und zerbricht an den ersten
+  drei. Was trägt, ist die Lage im **Sperrzyklus**. Das Kontingent war bis
+  06:41 da, dann weg, um 10:07 wieder da (PR #60 lief durch), danach wieder
+  weg. Legt man die Tabelle darüber, ordnen sich beide Hälften gleich:
+
+  - **Erste Sperrepisode** (ab ~06:41): #57 ist der erste Draft danach und
+    bekommt die Meldung. #58 und #59 folgen und schweigen.
+  - **Zweite Sperrepisode** (zwischen 10:07 und 14:14): #61 ist der erste
+    Draft danach und bekommt die Meldung. #62 und #63 folgen und schweigen.
+
+  **Der Draft-Pfad meldet einmal pro Sperrepisode, nicht einmal pro Draft.**
+  Das ist zweimal dasselbe Muster, unabhängig voneinander, mit je einem
+  Treffer und zwei Fehlanzeigen.
+
+  Belegt ist das nicht, gut gestützt schon. Drei Vorbehalte gehören dazu. Dass
+  #58 und #59 überhaupt als Draft angelegt wurden, ist aus ihrem PR-Text und
+  dem Abstand zwischen Anlage und Meldung **geschlossen**, nicht am
+  `draft`-Feld gesehen; bei #61 bis #63 ist es gesehen. Zwei Episoden sind
+  zwei Fälle und keine Reihe. Und die Regel könnte statt an der Episode an
+  einer schlichten Abkühlzeit hängen: Zwischen den beiden Meldungen liegen 7 h
+  31 min, und die längste beobachtete Stille nach einer Meldung ist 1 h 37 min
+  — eine Sperre von mehr als anderthalb und weniger als siebeneinhalb Stunden
+  erklärt die Daten ebenso gut.
+
+  Auseinander hält die beiden erst ein Draft, der kurz nach einer **neuen**
+  Erschöpfung angelegt wird, während die letzte Meldung noch keine zwei
+  Stunden her ist. Redet er, zählt die Episode; schweigt er, war es die Uhr.
+
+  Praktisch heisst das so oder so: **Ein stiller Draft belegt gar nichts.** Er
+  kann bedeuten, dass das Kontingent frei ist — oder dass es gesperrt ist und
+  bloss schon jemand vor ihm gefragt hat.
 
   Für die Zeile ganz oben heisst das: **«darauf läuft kein Review an» bleibt
   richtig.** Der Draft bekam gerade nicht die Review-Meldung, sondern die andere;
