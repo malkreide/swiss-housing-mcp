@@ -103,6 +103,10 @@ jobs:
 
       # `continue-on-error`, damit die Einordnung in jedem Fall laeuft. Rot
       # wird der Job weiter unten, aus dem eingeordneten Ergebnis.
+      # Die Suite prueft BEIDE Quellen des Servers: `api3.geo.admin.ch` (EGID
+      # und Geocoding) und `public.madd.bfs.admin.ch` (der Dump, per HEAD).
+      # Der Dump-Teil kam spaeter dazu — bis dahin nannte der Issue-Text unten
+      # eine Quelle, die kein Test beruehrte, und liess die gepruefte ungenannt.
       - name: Live-Suite
         id: suite
         continue-on-error: true
@@ -147,7 +151,17 @@ jobs:
             const tail = process.env.LIVE_TAIL || '(keine Ausgabe)';
             // Stabiles Praefix: Damit ein zweiter roter Lauf den bestehenden
             // Thread verlaengert statt einen zweiten aufzumachen.
-            const PREFIX = 'Live-Tests gegen public.madd.bfs.admin.ch rot';
+            //
+            // Hier stand `... gegen public.madd.bfs.admin.ch rot` — eine Quelle,
+            // die damals kein Live-Test beruehrte. Ein roter Lauf haette also auf
+            // den Dump gezeigt, waehrend die Ursache bei geo.admin.ch lag. Jetzt
+            // werden beide geprueft, und das Praefix nennt keine von beiden:
+            // Welche gebrochen ist, steht im Body und in der pytest-Ausgabe.
+            //
+            // ACHTUNG beim Aendern: Ein bereits offenes Issue mit dem alten
+            // Praefix wird nicht mehr gefunden, und der naechste rote Lauf legt
+            // ein zweites an. Beim Umstellen war kein Issue offen (geprueft).
+            const PREFIX = 'Live-Tests gegen die GWR-Quellen rot';
             const LABEL = 'upstream';
             const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}` +
                         `/actions/runs/${context.runId}`;
@@ -165,20 +179,27 @@ jobs:
 
             if (state === 'unknown') {
               // Weder oeffnen noch schliessen: Der Lauf hat nichts ueber den
-              // Vertrag mit public.madd.bfs.admin.ch festgestellt. Sichtbar ueber den roten Job.
+              // Vertrag mit den beiden Quellen festgestellt. Sichtbar ueber den roten Job.
               core.warning(`Live-Suite nicht ausgewertet: ${reason}. Am Issue wurde nichts geaendert.`);
               return;
             }
 
             if (state === 'finding') {
               const body = [
-                'Die geplante Live-Suite gegen `public.madd.bfs.admin.ch` ist rot.',
+                'Die geplante Live-Suite ist rot. Sie prueft zwei Quellen:',
+                '',
+                '- `api3.geo.admin.ch` — EGID-Lookup und Geocoding',
+                '- `public.madd.bfs.admin.ch` — der Kantons-Dump, per `HEAD`',
+                '  (Erreichbarkeit, Content-Type, Groesse, Frische)',
+                '',
+                'Welche der beiden gebrochen ist, steht in der pytest-Ausgabe',
+                'unten — der Testname nennt sie.',
                 '',
                 `Lauf: ${run}`,
                 `Einordnung: ${reason}`,
                 '',
                 '**Rot heisst hier nicht zwingend «unser Fehler».** Es heisst: Der Vertrag',
-                'mit der Quelle hat sich geaendert, oder die Quelle ist gerade aus. Beides',
+                'mit einer der Quellen hat sich geaendert, oder sie ist gerade aus. Beides',
                 'gehoert gesehen, nur das Erste gehoert gefixt — und genau das Erste sehen',
                 'die Unit-Tests nicht, weil ihre Fixtures aus derselben Annahme geschrieben',
                 'sind wie der Code.',
