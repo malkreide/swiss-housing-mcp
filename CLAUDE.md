@@ -310,14 +310,19 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   | 14:24:48 | PR #62 auf ready gesetzt | lang | ~1 s |
   | 14:36:35 | PR #63 auf ready gesetzt | lang | ~3 s |
 
-  Die letzten zwei Zeilen haben kein Gegenstück: Das Anlegen von #62 und #63
-  als Draft blieb beide Male ohne Meldung (siehe weiter unten).
-
-  Die letzten zwei Zeilen sind der Aufbau der Tabelle oben, noch einmal und an
-  einem anderen PR: gleicher PR, gleiches Konto, gleicher Kontingentstand, zwei
-  Minuten und 54 Sekunden auseinander, nur der Auslöser verschieden — und
+  Die **beiden #61-Zeilen** sind der Aufbau der Tabelle oben, noch einmal und
+  an einem anderen PR: gleicher PR, gleiches Konto, gleicher Kontingentstand,
+  zwei Minuten und 54 Sekunden auseinander, nur der Auslöser verschieden — und
   wieder kurz beim Draft, lang beim Ready. Der Kommentar reiht sich beim
   Review-Pfad ein, wie «ready».
+
+  Die Ready-Zeilen von **#62 und #63** haben dagegen kein Draft-Gegenstück: Das
+  Anlegen dieser beiden PRs als Draft blieb ohne Meldung (siehe weiter unten).
+
+  Diese zwei Absätze hiessen beide einmal «Die letzten zwei Zeilen» und meinten
+  Verschiedenes — der Bezug wanderte mit, als die Tabelle wuchs. Zeilen nach
+  Inhalt benennen, nicht nach Position; eine Positionsangabe in einer Tabelle,
+  an die angebaut wird, ist eine Zeitbombe.
 
   Entstanden ist sie nicht durch Planung: Der PR war als Draft angelegt worden,
   *weil* die Sperre bekannt war, und wurde dann von aussen auf ready gesetzt
@@ -350,8 +355,17 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   das Verhalten der Gegenstelle.
 
   Für den Zweck reicht es trotzdem, denn gebraucht wird nur die **obere**
-  Schranke: Nach einer Viertelminute ohne jede Regung ist keines von beidem
-  mehr unterwegs.
+  Schranke. Als Faustregel: Nach einer Viertelminute ohne jede Regung ist
+  vermutlich keines von beidem mehr unterwegs.
+
+  «Vermutlich» steht da mit Absicht. Sieben Messungen zwischen rund 1 und 11
+  Sekunden zeigen, was üblich ist, und nicht, dass nach 15 Sekunden nichts mehr
+  kommen **kann**; ein verzögerter Webhook oder eine langsame Gegenstelle sind
+  damit nicht ausgeschlossen. Wer die Schwelle als Beweis liest, erklärt einen
+  Auslöser für ausgefallen und schickt eine zweite Anfrage hinterher — die
+  kostet Kontingent, und beim Review-Pfad ist das genau die knappe Ressource.
+  Diese Datei warnt an anderer Stelle davor, aus Beobachtungspunkten eine Dauer
+  zu machen; hier gilt dasselbe.
 
   Diese Regel hat aber eine Bedingung, die leicht untergeht — und die an ihr
   selbst schiefging. Sie verlangt **zwei** gemessene Zeitpunkte: den des
@@ -381,9 +395,10 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   danach. Der Draft trug also **mindestens 30 Sekunden** keinen Kommentar —
   gegen 11 Sekunden bei #57 und #61.
 
-  Die Frage, was den stillen Draft vom redenden unterscheidet, ist inzwischen
-  beantwortet, und die Antwort stellt die Zeile «Draft → kurz» richtig. Sechs
-  Draft-Anlagen desselben Tages, alle unter erschöpftem Kontingent:
+  Was den stillen Draft vom redenden unterscheidet, lässt sich inzwischen
+  eingrenzen — beantwortet ist die Frage nicht. Sicher ist nur das Negative:
+  Die Zeile «Draft → kurz» gilt nicht ausnahmslos. Sechs Draft-Anlagen
+  desselben Tages, alle unter erschöpftem Kontingent:
 
   | Draft | angelegt | Ausgang |
   |---|---|---|
@@ -409,9 +424,15 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   - **Zweite Sperrepisode** (zwischen 10:07 und 14:14): #61 ist der erste
     Draft danach und bekommt die Meldung. #62 und #63 folgen und schweigen.
 
-  **Der Draft-Pfad meldet einmal pro Sperrepisode, nicht einmal pro Draft.**
-  Das ist zweimal dasselbe Muster, unabhängig voneinander, mit je einem
-  Treffer und zwei Fehlanzeigen.
+  Daraus liesse sich die Regel bilden: **Der Draft-Pfad meldet einmal pro
+  Sperrepisode, nicht einmal pro Draft.** Sie ist eine Hypothese, kein Befund —
+  zweimal dasselbe Muster, unabhängig voneinander, mit je einem Treffer und
+  zwei Fehlanzeigen, mehr trägt die Beobachtung nicht.
+
+  Und sie ist widerlegbar, ohne dass man lange suchen müsste: Fällt eine neue
+  Erschöpfung in die Abkühlzeit der konkurrierenden Erklärung, schweigt der
+  erste Draft der neuen Episode — und die Episodenregel ist falsch. Genau
+  dieser Fall ist bisher nicht eingetreten und auch nicht geprüft.
 
   Belegt ist das nicht, gut gestützt schon. Drei Vorbehalte gehören dazu. Dass
   #58 und #59 überhaupt als Draft angelegt wurden, ist aus ihrem PR-Text und
@@ -531,9 +552,16 @@ ein, den dieser Abschnitt verhindern soll, nur in die andere Richtung.
 sich an der Form: Ein Review **mit** Befund ist ein Review-Objekt
 («💡 Codex Review», mit Commit-Angabe); ein Review **ohne** Befund und die
 beiden Ausfallmeldungen — Kontingent wie Environment — sind gewöhnliche
-Issue-Kommentare und trennen sich nur im Text. Beim Draft gibt es überhaupt
-nichts, weil Codex nicht anläuft; ein kommentarloser Draft ist deshalb kein
-Beleg, sondern ein nicht durchgeführter Test.
+Issue-Kommentare und trennen sich nur im Text.
+
+Beim Draft läuft kein *Review* an — eine Meldung kann er trotzdem bekommen,
+aus dem anderen Pfad (siehe oben, «Der PR ist ein Draft»). Die beiden Fälle
+auseinanderzuhalten lohnt sich: Ein kommentarloser Draft ist kein Beleg,
+sondern ein nicht durchgeführter Test; ein Draft **mit** kurzer Kontingent-
+Meldung ist ebenfalls keiner, sondern die Auskunft, dass der Topf leer ist.
+Wer hier «beim Draft gibt es überhaupt nichts» liest — wie es hier zwei
+Fassungen lang stand — hält die kurze Meldung für etwas anderes, als sie ist,
+und sucht den Fehler an der falschen Stelle.
 
 Die Statustabelle ist ebenfalls ein gewöhnlicher Issue-Kommentar, unterscheidet
 sich von den dreien aber in einem Punkt, der beim Nachsehen zählt: Sie wird

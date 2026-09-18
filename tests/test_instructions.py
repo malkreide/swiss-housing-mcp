@@ -244,8 +244,20 @@ def test_die_aufloesung_nennt_ihre_grenze() -> None:
     «Aufloesung klappt normalerweise».
     """
     zeile = absatz(mcp.instructions or "", ANKER_AUFLOESEND)
-    assert "cold cache" in zeile or "already cached" in zeile, (
+    assert "already cached" in zeile, (
         "die Aufloesung wird ohne ihre Grenze beschrieben; ein Aufrufer verlaesst "
         "sich dann darauf und zahlt einen vergeblichen Rundlauf"
     )
     assert "261" in zeile, "der einzige vom Seed gedeckte BFS-Wert wird nicht genannt"
+
+    # Zweiter P2-Befund auf demselben PR, nachgereicht am 18.9.2026: Hier stand
+    # «cached in this process». Der Cache ist aber ein Verzeichnis —
+    # `GwrStore.status()` prueft `path.exists()`, und `_canton_for_municipality`
+    # laeuft genau ueber dessen Ergebnis. Nach einem Neustart zaehlt jede
+    # vorhandene Datei weiter als gecacht. Wer «in this process» las, hielt eine
+    # Abfrage fuer aussichtslos, die durchgelaufen waere.
+    assert "in this process" not in zeile, (
+        "die Aufloesung wird als Prozess-Zustand beschrieben; sie liest aber ein "
+        "Verzeichnis und ueberlebt einen Neustart"
+    )
+    assert "disk" in zeile, "die Dauerhaftigkeit des Caches wird nicht benannt"

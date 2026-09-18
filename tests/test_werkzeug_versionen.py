@@ -25,7 +25,13 @@ _CLAUDE_MD = _ROOT / "CLAUDE.md"
 # Die Pin-Form, und nur sie. Eine Jahreszahl oder ein erzaehltes «der Bump auf
 # 0.16.1» ist Geschichte und darf stehen bleiben; `ruff==X.Y.Z` behauptet
 # dagegen einen geltenden Pin und ist damit eine zweite Quelle.
-_RUFF_PIN = re.compile(r"ruff==\d+\.\d+\.\d+")
+#
+# Gross-/Kleinschreibung und Leerraum um `==` gehoeren dazu: `Ruff==0.17.0` und
+# `ruff == 0.17.0` sind beide gueltige Requirement-Schreibweisen (PEP 508 laesst
+# Leerraum zu, und Paketnamen vergleicht pip normalisiert), veralten also nach
+# einem Bump genauso. Die erste Fassung kannte nur exakt `ruff==` und liess
+# beide durch — aufgefallen in einem Codex-Review, nicht beim Schreiben.
+_RUFF_PIN = re.compile(r"(?i)(?<![\w.-])ruff\s*==\s*\d+\.\d+\.\d+")
 
 # Formen, in denen ein Schritt ein Paket eigenstaendig installiert. Die erste
 # Fassung dieses Tests kannte nur `pip install ruff` und liess damit
@@ -170,3 +176,39 @@ def test_kein_ruff_pin_in_der_projektanweisung() -> None:
         f"die ein Dependabot-Bump nicht nachzieht: {treffer}. Auf den Pin verweisen "
         "statt ihn zu wiederholen — die Zahl steht in pyproject.toml."
     )
+
+
+@pytest.mark.parametrize(
+    ("zeile", "ist_pin"),
+    [
+        # Muss treffen — alle vier sind gueltige Requirement-Schreibweisen und
+        # veralten nach einem Dependabot-Bump gleichermassen.
+        ("ruff==0.16.5", True),
+        ("Ruff==0.17.0", True),
+        ("ruff == 0.17.0", True),
+        ("ruff  ==  0.1.2", True),
+        # Darf nicht treffen. Die erzaehlte Zahl ist der Grund, warum hier ein
+        # Verbot der Pin-Form steht und kein Verbot von Versionszahlen: Ein
+        # Gate, das jede Zahl verboete, machte die historischen Passagen der
+        # Projektanweisung unschreibbar.
+        ("der Bump auf 0.16.1", False),
+        ("ruff 0.16.5", False),
+        ("ruff>=0.5", False),
+        # Fremde Pakete, deren Name auf «ruff» endet oder ihn enthaelt.
+        ("pyruff==0.1.0", False),
+        ("my-ruff==0.1.0", False),
+    ],
+)
+def test_der_pin_erkenner_kennt_die_schreibweisen(zeile: str, ist_pin: bool) -> None:
+    """Gegenprobe zum Ausdruck selbst.
+
+    Die erste Fassung war `ruff==\\d+\\.\\d+\\.\\d+` — exakt kleingeschrieben, ohne
+    Leerraum. `Ruff==0.17.0` und `ruff == 0.17.0` liefen damit durch, obwohl
+    beide denselben geltenden Pin ausdruecken. Der Fehlbefund waere still
+    gewesen: Das Gate bliebe gruen und die zweite Versionsquelle bestehen.
+
+    Die Negativfaelle sind der wichtigere Teil. Ein zu weiter Ausdruck faerbt
+    `pyruff==0.1.0` rot und macht das Gate unbrauchbar, lange bevor jemand
+    nachsieht, warum.
+    """
+    assert bool(_RUFF_PIN.search(zeile)) is ist_pin
