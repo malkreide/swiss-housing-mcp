@@ -265,7 +265,49 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   Reaktion; am 29.8. kam die Reaktion und keine Meldung. Der Kasten trifft
   damit weder das eine noch das andere zuverlässig — er ist keine Quelle, auch
   nicht in seiner neuen Fassung.
-- **Der PR ist ein Draft** — darauf läuft Codex nicht an.
+- **Der PR ist ein Draft** — darauf läuft kein Review an. Still ist ein Draft
+  deswegen aber nicht: Am 18.9.2026 bekam PR #57 dieses Repos **11 Sekunden
+  nach dem Anlegen** einen Kommentar, ohne je auf ready gesetzt worden zu sein
+  (`draft: true` beim Lesen). Etwas hat den Draft also gesehen und weit genug
+  ausgewertet, um zu antworten. Die Zeile «darauf läuft Codex nicht an» galt
+  bis dahin als vollständig und ist es nicht.
+
+  Was der Draft bekam, war die Kontingent-Meldung — und zwar in einer **anderen
+  Fassung** als die eine Minute zuvor auf #56:
+
+  ```
+  You have reached your Codex usage limits for code reviews.
+  ```
+  ```
+  You have reached your Codex usage limits.
+  ```
+
+  Der Zusatz «for code reviews» fehlt. Welche der beiden Fassungen kommt, hängt
+  am Auslöser — und das ist an **demselben PR** gemessen, vier Minuten
+  auseinander, bei unveränderter Sperrlage:
+
+  | Zeit | Auslöser | Meldung |
+  |---|---|---|
+  | 06:46:46 | PR als Draft angelegt | «…usage limits.» |
+  | 06:51:04 | Draft auf ready gesetzt | «…usage limits **for code reviews**.» |
+
+  Eine bessere Kontrolle gibt es kaum: gleicher PR, gleiches Konto, gleicher
+  Kontingentstand, nur der Auslöser verschieden. Das stützt stark, dass zwei
+  Pfade antworten — die lange Fassung der Review-Pfad, den «ready» auslöst, die
+  kurze etwas anderes, das schon am Draft anschlägt. Zu den zwei Töpfen (siehe
+  unten) passt es ebenfalls: Jeder Pfad meldet den seinen.
+
+  Für die Zeile ganz oben heisst das: **«darauf läuft kein Review an» bleibt
+  richtig.** Der Draft bekam gerade nicht die Review-Meldung, sondern die andere;
+  die Review-Meldung kam erst mit «ready». Neu ist nur, dass ein Draft überhaupt
+  eine Antwort bekommt — aus einem Pfad, den dieser Abschnitt bisher nicht
+  kannte.
+
+  Bewiesen ist das nicht. Denkbar bleibt ein einziger Pfad, der je nach
+  erschöpftem Topf anders formuliert. Dagegen spricht, dass beide Töpfe schon um
+  06:41 leer waren, die Fassungen sich danach aber weiter unterschieden. Wer die
+  Frage schliessen will, braucht denselben Vergleich bei **freiem** Kontingent —
+  dann zeigt sich, ob der Draft schweigt oder etwas anderes bekommt.
 - **Das Kontingent ist weg** — dann schreibt er die Meldung oben.
 - **Für das Repo fehlt eine Environment** — dann schreibt er:
 
@@ -312,14 +354,25 @@ Reaktion und keine Meldung. Die beiden Träger vertreten einander also nicht
 verlässlich; wer nur einen davon abfragt, zählt je nach Tag Geprüftes als
 ungeprüft oder umgekehrt.
 
-Zwei Vorbehalte, beide unerledigt. Erstens ist **nicht belegt, dass die 👍 von
-Codex stammt** — `reactions` liefert nur die Zahl, nicht den Urheber; das klärt
-erst eine Abfrage, die die Reagierenden auflistet. Zweitens liefen beide Reviews
-vollständig nach dem Merge. Ob Codex auf einem geschlossenen PR einen Befund
-noch absetzen würde, ist damit nicht geprüft — keiner der beiden Läufe hatte
-offenbar einen. Zwei befundlose Läufe belegen zwei befundlose Läufe, nicht die
-Fähigkeit, einen Befund abzusetzen. Ein Befund auf einem bereits gemergten PR
-bleibt der ungetestete Fall.
+Zwei Vorbehalte standen hier. Der erste gilt weiter: **nicht belegt, dass die
+Reaktion von Codex stammt** — `reactions` liefert nur die Zahl, nicht den
+Urheber; das klärt erst eine Abfrage, die die Reagierenden auflistet. Dazu kam
+am 18.9.2026 die 👀: Während der Lauf auf PR #55 dieses Repos lief, trug der
+**PR** `reactions.total_count: 1` mit `eyes: 1`, der Kommentar keine. Das stützt
+die 👀-Hälfte des Infokastens für diesen Lauf und bestätigt nebenbei, dass beide
+Reaktionen am PR sitzen — am Urheber ändert es nichts.
+
+Der zweite ist **erledigt, und die Antwort lautet ja: Codex setzt auf einem
+gemergten PR einen Befund ab.** Am 18.9.2026 wurde PR #55 um 06:09:24 gemergt,
+während der um 06:08:19 gestartete Lauf noch lief; um 06:12:31 stand das
+Review-Objekt da, mit einem P2-Befund, der zutraf. Der Merge hat den Lauf also
+weder abgebrochen noch seinen Befund verschluckt.
+
+Was damit **nicht** geprüft ist: ein Lauf, der erst *nach* dem Merge ausgelöst
+wird. Der Versuch am selben Tag — `@codex review` auf dem bereits gemergten
+PR #56 — endete um 06:41:08 in der Kontingent-Meldung und hat die Frage deshalb
+nicht beantwortet. Gemessen ist ein Lauf, der den Merge überdauert, nicht einer,
+der ihm folgt.
 
 Bis dahin gilt: Eine `Completed`-Zeile belegt, dass ein Lauf stattfand — nicht,
 dass er nichts gefunden hat. Wer sie als Freigabe liest, hat die Frage, die
@@ -387,17 +440,58 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist am 29.8. zweimal gemessen: **78 und 62 Sekunden** von
-`Running` bis `Completed` — PR #41 dieses Repos 08:52:22 → 08:53:40, PR #42
-09:00:08 → 09:01:09. Zwei Messungen sind keine Verteilung; wer wartet, sollte
-mit gut einer Minute rechnen und nicht mit Sekunden, und die 78 nicht für eine
-Obergrenze halten.
+Wie viel Zeit, ist inzwischen viermal gemessen, und die Spanne ist weit:
+
+| Datum | PR | `Running` → `Completed` | Dauer |
+|---|---|---|---|
+| 29.8.2026 | #42 | 09:00:08 → 09:01:09 | 62 s |
+| 29.8.2026 | #41 | 08:52:22 → 08:53:40 | 78 s |
+| 18.9.2026 | #56 | 06:33:49 → 06:36:19 | 150 s |
+| 18.9.2026 | #55 | 06:08:19 → 06:12:33 | 254 s |
+
+Hier stand «wer wartet, sollte mit gut einer Minute rechnen». Nach zwei
+Messungen war das vertretbar, nach vier ist es zu eng: Der längste Lauf dauerte
+das Vierfache des kürzesten, und zwei der vier lagen über zwei Minuten. Wer
+nach einer Minute auf «hängt» schliesst, liegt in der Hälfte der gemessenen
+Fälle falsch — am 18.9. wäre das zweimal passiert.
+
+Vier Messungen sind immer noch keine Verteilung. Die 254 taugen so wenig als
+Obergrenze, wie es die 78 taten; der Satz galt schon damals und gilt weiter.
 
 Beide Male lag der Merge davor — `closed_at` 08:52:19 und 09:00:06 —, der Lauf
 begann also zwei bis drei Sekunden nach dem Merge und lief vollständig auf
 einem geschlossenen PR. Abgebrochen wurde er dabei nicht: Der Merge nimmt einem
 nicht den Lauf, sondern nur die Gelegenheit, sein Ergebnis vor dem Merge zu
 sehen und darauf zu reagieren.
+
+**Dritter Weg, den Prüfer zu verlieren, und der stillste: nach dem Review noch
+einmal pushen.** Die Auslöser, die Codex selbst aufzählt, sind «Open a pull
+request for review», «Mark a draft as ready» und der Kommentar `@codex review`.
+Ein Push steht nicht darunter.
+
+Am 18.9.2026 verhielt es sich auch so. Auf PR #56 dieses Repos folgte dem
+geprüften Commit `881b704` der Fix-Commit `890b79c`; danach nannte die
+Statustabelle weiterhin `881b704`, und es erschien weder eine neue Zeile noch
+ein neuer Kommentar. Dass die Abwesenheit etwas heisst, hängt an einer zweiten
+Messung: Die Statustabelle erscheint **9 bis 11 Sekunden** nach dem Auslöser
+(#55 ready 06:08:12 → Tabelle 06:08:23; #56 ready 06:33:43 → Tabelle 06:33:52).
+Nach über fünfzig Sekunden ohne Regung ist also nicht bloss noch nichts da.
+
+Das ist die gefährlichste der drei Lücken, weil sie genau dann zuschlägt, wenn
+alles richtig gelaufen ist: Codex findet etwas, man behebt es, man pusht — und
+der Commit, der am Ende gemergt wird, ist der einzige, den niemand geprüft hat.
+Die Checkliste «kein offener Befund beim Merge» liest sich dabei als erfüllt,
+denn der Befund *ist* behoben; geprüft ist bloss der Stand davor. Abhilfe ist
+ein Kommentar `@codex review` nach dem Fix-Push — und der kostet Kontingent.
+
+Ein Vorbehalt, und er ist nicht klein: In genau diesem Fenster war das
+Kontingent nachweislich schon erschöpft — die Meldung kam 76 Sekunden nach dem
+Push auf denselben PR. Ein Push, der ausgelöst hätte, wäre also womöglich
+ebenfalls an der Sperre gescheitert, nur stumm. Belegt ist damit ausschliesslich:
+**kein Lauf nach dem Push.** Ob die Ursache der fehlende Auslöser war oder die
+Sperre, trennen diese Beobachtungen nicht. Die Auslöser-Liste stützt das eine,
+die Uhrzeit das andere; wer sich hier auf eine Ursache festlegt, hat sie
+gewählt und nicht gemessen.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
