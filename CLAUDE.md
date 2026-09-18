@@ -552,15 +552,15 @@ Pin längst auf `0.16.5` lief: Ein Dependabot-Bump zieht `pyproject.toml` nach,
 diese Datei nicht. Der Satz behauptete also «genau eine Quelle» und war selbst
 die zweite.
 
-Dass hier «`0.16.3`» steht und nicht die Pin-Schreibweise, ist ebenfalls die
-Regel: Das Gate verbietet genau die Form, die einen geltenden Pin behauptet.
-Eine erzählte Zahl darf bleiben — sie beschreibt Vergangenes.
-
 Schlimmer als bloss falsch. Der Absatz in Teil 1 verlangt, die Gates lokal mit
 der **gepinnten** Version zu fahren — wer die Zahl von hier nahm, installierte
 `0.16.3` und bekam Formatabweichungen, die niemand verursacht hat. Genau der
 Fehler, vor dem dieselbe Datei zwei Abschnitte weiter oben warnt.
 `test_werkzeug_versionen.py` hält die Zahl jetzt draussen.
+
+Dass hier «`0.16.3`» steht und nicht die Pin-Schreibweise, ist ebenfalls die
+Regel: Das Gate verbietet genau die Form, die einen geltenden Pin behauptet.
+Eine erzählte Zahl darf bleiben — sie beschreibt Vergangenes.
 
 Keine zweite Version in die Workflows schreiben: ein solcher Schritt läuft nach dem
 Install und überstimmt den Pin still (`ci.yml` hatte einen;
