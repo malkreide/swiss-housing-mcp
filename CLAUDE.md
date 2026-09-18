@@ -282,16 +282,32 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   You have reached your Codex usage limits.
   ```
 
-  Der Zusatz «for code reviews» fehlt. Das passt dazu, dass Code-Reviews einen
-  eigenen Topf haben (siehe unten): Die zweite Meldung könnte das allgemeine
-  Kontingent betreffen und damit einen ganz anderen Pfad als den Review. Sie
-  deshalb in dieselbe Schublade zu legen, wäre genau der Fehler, vor dem der
-  Absatz über den Kommentarzähler warnt — zwei Texte, ein Name.
+  Der Zusatz «for code reviews» fehlt. Welche der beiden Fassungen kommt, hängt
+  am Auslöser — und das ist an **demselben PR** gemessen, vier Minuten
+  auseinander, bei unveränderter Sperrlage:
 
-  Offen bleibt daher: ob auf einem Draft bei freiem Kontingent ein Review
-  gelaufen wäre, ob die Antwort überhaupt vom Review-Pfad kam, und ob ein
-  Draft auch ohne Sperre einen Kommentar bekommt. Belegt ist allein, dass ein
-  Draft eine Antwort bekam.
+  | Zeit | Auslöser | Meldung |
+  |---|---|---|
+  | 06:46:46 | PR als Draft angelegt | «…usage limits.» |
+  | 06:51:04 | Draft auf ready gesetzt | «…usage limits **for code reviews**.» |
+
+  Eine bessere Kontrolle gibt es kaum: gleicher PR, gleiches Konto, gleicher
+  Kontingentstand, nur der Auslöser verschieden. Das stützt stark, dass zwei
+  Pfade antworten — die lange Fassung der Review-Pfad, den «ready» auslöst, die
+  kurze etwas anderes, das schon am Draft anschlägt. Zu den zwei Töpfen (siehe
+  unten) passt es ebenfalls: Jeder Pfad meldet den seinen.
+
+  Für die Zeile ganz oben heisst das: **«darauf läuft kein Review an» bleibt
+  richtig.** Der Draft bekam gerade nicht die Review-Meldung, sondern die andere;
+  die Review-Meldung kam erst mit «ready». Neu ist nur, dass ein Draft überhaupt
+  eine Antwort bekommt — aus einem Pfad, den dieser Abschnitt bisher nicht
+  kannte.
+
+  Bewiesen ist das nicht. Denkbar bleibt ein einziger Pfad, der je nach
+  erschöpftem Topf anders formuliert. Dagegen spricht, dass beide Töpfe schon um
+  06:41 leer waren, die Fassungen sich danach aber weiter unterschieden. Wer die
+  Frage schliessen will, braucht denselben Vergleich bei **freiem** Kontingent —
+  dann zeigt sich, ob der Draft schweigt oder etwas anderes bekommt.
 - **Das Kontingent ist weg** — dann schreibt er die Meldung oben.
 - **Für das Repo fehlt eine Environment** — dann schreibt er:
 
