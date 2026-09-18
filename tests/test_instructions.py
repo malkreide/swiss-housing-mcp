@@ -32,16 +32,62 @@ driftet wie der Prosatext, den sie sichern soll.
 
 from __future__ import annotations
 
+import ast
+import pathlib
+
 import pytest
 from mcp import Client
 
 from swiss_housing_mcp.server import mcp
+
+SERVER_PY = pathlib.Path(__file__).resolve().parents[1] / "src" / "swiss_housing_mcp" / "server.py"
 
 # Ankersaetze der beiden Absaetze. Bewusst kurze, inhaltstragende Fragmente:
 # ein ganzer Satz als Anker bricht bei jeder Umformulierung, ein einzelnes Wort
 # trifft auch den falschen Absatz.
 ANKER_AUSDRUECKLICH = "ALWAYS pass `canton`"
 ANKER_AUFLOESEND = "resolve the canton themselves"
+ANKER_DUMP = "read a cantonal dump"
+ANKER_AUSNAHME = "is NOT one of them"
+
+
+def dump_gestuetzte_werkzeuge() -> set[str]:
+    """Werkzeuge, die tatsaechlich einen Dump holen — aus dem Quelltext.
+
+    Ueber `ast` und nicht ueber `inspect.getsource`: welche Objekte der
+    `@mcp.tool`-Dekorator zurueckgibt, ist Sache des SDK und kann sich mit
+    einem Bump aendern. Der Quelltext kann das nicht.
+
+    Kriterium ist der Aufruf von `store.ensure_dump` im Rumpf. Das ist die
+    einzige Stelle, an der ein Dump geholt wird; ein Werkzeug ohne diesen
+    Aufruf kontaktiert die Quelle nicht.
+    """
+    baum = ast.parse(SERVER_PY.read_text(encoding="utf-8"))
+    namen = set()
+    for knoten in baum.body:
+        if not isinstance(knoten, ast.AsyncFunctionDef):
+            continue
+        if not any(
+            isinstance(d, ast.Call) and getattr(d.func, "attr", None) == "tool"
+            for d in knoten.decorator_list
+        ):
+            continue
+        if any(isinstance(k, ast.Attribute) and k.attr == "ensure_dump" for k in ast.walk(knoten)):
+            namen.add(knoten.name)
+    return namen
+
+
+def alle_werkzeugnamen() -> set[str]:
+    baum = ast.parse(SERVER_PY.read_text(encoding="utf-8"))
+    return {
+        k.name
+        for k in baum.body
+        if isinstance(k, ast.AsyncFunctionDef)
+        and any(
+            isinstance(d, ast.Call) and getattr(d.func, "attr", None) == "tool"
+            for d in k.decorator_list
+        )
+    }
 
 
 async def werkzeug_gruppen() -> tuple[set[str], set[str]]:
@@ -143,3 +189,63 @@ def test_die_anker_existieren(anker) -> None:
     assert anker in (mcp.instructions or ""), (
         f"Anker «{anker}» fehlt — wurde der Absatz umformuliert? Dann hier nachziehen."
     )
+
+
+async def test_jedes_dump_gestuetzte_werkzeug_wird_benannt() -> None:
+    """P2-Befund von Codex auf PR #56, zweiter Teil.
+
+    Hier stand «The remaining tools read a cantonal dump» — eine Formel, die
+    kein einziges Werkzeug nennt und deshalb auch `dump_status` einschloss.
+    Das ist nicht bloss ungenau: `dump_status` ist der Einstieg, wenn die
+    Quelle ausgefallen scheint, und die Formel liess einen Client annehmen, es
+    wuerde dabei dieselbe Quelle kontaktieren. Genau dann haette er es gemieden.
+    """
+    dump = dump_gestuetzte_werkzeuge()
+    assert dump, "kein Werkzeug ruft ensure_dump — Ableitung kaputt?"
+
+    zeile = absatz(mcp.instructions or "", ANKER_DUMP)
+    fehlend = sorted(name for name in dump if f"`{name}`" not in zeile)
+    assert not fehlend, f"{fehlend} holt/holen einen Dump, wird/werden aber nicht genannt"
+
+
+async def test_kein_dumploses_werkzeug_wird_als_dump_gestuetzt_ausgegeben() -> None:
+    """Die Gegenrichtung — und der eigentliche Befund.
+
+    Ein Werkzeug ohne `ensure_dump` darf im Dump-Absatz nur vorkommen, um
+    ausgenommen zu werden. Die Ausnahme muss also VOR der Nennung stehen.
+    """
+    ohne_dump = alle_werkzeugnamen() - dump_gestuetzte_werkzeuge()
+    assert ohne_dump, "alle Werkzeuge holen Dumps? dann ist die Ableitung kaputt"
+
+    zeile = absatz(mcp.instructions or "", ANKER_DUMP)
+    ausnahme = zeile.find(ANKER_AUSNAHME)
+    assert ausnahme != -1, f"kein «{ANKER_AUSNAHME}» im Dump-Absatz"
+
+    for name in ohne_dump:
+        stelle = zeile.find(f"`{name}`")
+        if stelle == -1:
+            continue
+        assert stelle >= ausnahme - len(f"`{name}` "), (
+            f"{name} holt keinen Dump, steht aber vor der Ausnahme — ein Client "
+            "liest es als dump-gestuetzt und meidet es bei einer Stoerung"
+        )
+
+
+def test_die_aufloesung_nennt_ihre_grenze() -> None:
+    """P2-Befund von Codex auf PR #56, erster Teil.
+
+    `_canton_for_municipality` durchsucht nur bereits gecachte Dumps und faellt
+    dann auf einen Seed zurueck, der genau BFS 261 kennt. Auf kaltem Cache
+    scheitert sie also fuer jede andere Gemeinde, ohne irgendetwas zu laden.
+
+    Hier stand «Pass `canton` only if that resolution fails» — das schickte
+    jeden Aufrufer ausserhalb Zuerichs zuerst in einen garantiert vergeblichen
+    Aufruf. Die Grenze gehoert genannt, sonst liest sich die Regel als
+    «Aufloesung klappt normalerweise».
+    """
+    zeile = absatz(mcp.instructions or "", ANKER_AUFLOESEND)
+    assert "cold cache" in zeile or "already cached" in zeile, (
+        "die Aufloesung wird ohne ihre Grenze beschrieben; ein Aufrufer verlaesst "
+        "sich dann darauf und zahlt einen vergeblichen Rundlauf"
+    )
+    assert "261" in zeile, "der einzige vom Seed gedeckte BFS-Wert wird nicht genannt"
