@@ -297,7 +297,7 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   kurze etwas anderes, das schon am Draft anschlägt. Zu den zwei Töpfen (siehe
   unten) passt es ebenfalls: Jeder Pfad meldet den seinen.
 
-  Derselbe Tag hat die Zuordnung noch fünfmal bestätigt — mit einem dritten
+  Derselbe Tag hat die Zuordnung noch sechsmal bestätigt — mit einem dritten
   Auslöser und, ungeplant, mit einer **zweiten vollständigen Kontrolle**:
 
   | Zeit | Auslöser | Fassung | Latenz |
@@ -307,6 +307,10 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   | 14:14:29 | Kommentar `@codex review` (#59) | lang | 9 s |
   | 14:17:53 | PR #61 als Draft angelegt | kurz | 11 s |
   | 14:20:47 | **derselbe** PR #61 auf ready gesetzt | lang | ~3 s |
+  | 14:24:48 | PR #62 auf ready gesetzt | lang | ~1 s |
+
+  Die letzte Zeile hat kein Gegenstück: Das Anlegen von #62 als Draft um
+  14:23:46 blieb ohne Meldung (siehe weiter unten).
 
   Die letzten zwei Zeilen sind der Aufbau der Tabelle oben, noch einmal und an
   einem anderen PR: gleicher PR, gleiches Konto, gleicher Kontingentstand, zwei
@@ -324,9 +328,9 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   Aus der langen Fassung darauf zurückzuschliessen wäre zirkulär — sie ist ja
   das, was belegt werden soll.
 
-  Bleiben sieben belegte Fälle an einem Tag: zweimal Draft (kurz), zweimal
-  «ready» (lang), dreimal Kommentar (lang). Keiner widerspricht, und die
-  Zuordnung ruht jetzt auf **zwei** unabhängigen Kontrollen statt einer.
+  Bleiben acht belegte Fälle an einem Tag: zweimal Draft (kurz), dreimal
+  «ready» (lang), dreimal Kommentar (lang). Keiner widerspricht der Zuordnung,
+  und sie ruht jetzt auf **zwei** unabhängigen Kontrollen statt einer.
 
   Was das nicht leistet: Beide Kontrollen liefen unter erschöpftem Kontingent.
   Sie verdoppeln die Evidenz für die Zuordnung, nicht die für ihre Ursache —
@@ -334,11 +338,51 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
 
   Nebenbei fällt eine Zeitmarke ab: Die Absage kommt in derselben
   Grössenordnung wie die Statustabelle beim Erfolg (9 bis 11 s, siehe unten) —
-  fünfmal gemessen zwischen rund 3 und 11 Sekunden. Die 3 s sind die
-  unschärfste der fünf: Sie messen gegen den Zeitpunkt des Ready-Ereignisses
-  aus dem Webhook, nicht gegen einen von GitHub abgefragten Zeitstempel. Für
-  den Zweck reicht es — nach einer Viertelminute ohne jede Regung ist keines
-  von beidem mehr unterwegs.
+  sechsmal gemessen zwischen rund 1 und 11 Sekunden. Die Untergrenze stand
+  hier erst bei 3 s und rutschte mit der nächsten Messung auf 1 s (PR #62:
+  Ready 14:24:47, Meldung 14:24:48). Beide sind die unschärfsten der Reihe:
+  Sie messen gegen den Zeitpunkt des Ready-Ereignisses aus dem Webhook, nicht
+  gegen einen von GitHub abgefragten Zeitstempel. Wer eine Untergrenze aus
+  zwei solchen Werten bildet, schreibt die Auflösung seiner Uhr auf und nicht
+  das Verhalten der Gegenstelle.
+
+  Für den Zweck reicht es trotzdem, denn gebraucht wird nur die **obere**
+  Schranke: Nach einer Viertelminute ohne jede Regung ist keines von beidem
+  mehr unterwegs.
+
+  Diese Regel hat aber eine Bedingung, die leicht untergeht — und die an ihr
+  selbst schiefging. Sie verlangt **zwei** gemessene Zeitpunkte: den des
+  Auslösers und den der eigenen Abfrage. Am 18.9.2026 wurde ein leeres
+  `get_comments` auf dem frisch angelegten Draft #62 als «der Draft ist still
+  geblieben» gebucht und für die offene Frage nach dem freien Kontingent
+  gehalten. Die Meldung kam Sekunden später; die Abfrage hatte schlicht in der
+  Lücke davor gelegen. Dazu war die behauptete Wartezeit aus dem Zeitstempel
+  einer Benachrichtigung und einem *späteren* Uhrenaufruf gerechnet — die
+  Abfrage selbst lag dazwischen und trug gar keinen Zeitstempel.
+
+  **Ein leeres Ergebnis ohne gemessenen Abfragezeitpunkt ist keine Stille,
+  sondern eine Lücke.** Der Unterschied ist derselbe wie beim 403 weiter oben:
+  Dort war nicht geantwortet worden, hier war nicht hingesehen worden — und
+  beides sieht aus wie ein Befund.
+
+  Beim Aufräumen dieses Fehlers kam ein zweiter heraus, in die Gegenrichtung.
+  Der Draft von #62 war nämlich **tatsächlich** still: Die Meldung um 14:24:48
+  folgte dem Ready um 14:24:47, nicht dem Anlegen um 14:23:46. Eine kurze
+  Fassung hat dieser Draft nie bekommen. Wer die erste Fehldeutung zurücknimmt,
+  nimmt darum leicht zu viel zurück und erklärt die Meldung zur verspäteten
+  Antwort auf den Draft — sie war die pünktliche Antwort auf etwas anderes.
+
+  Wie lange still, lässt sich ohne Zeitstempel auf der Abfrage immer noch
+  begrenzen, denn ein anderer ist gemessen: Um 14:24:16 lief die
+  Benachrichtigung über die fertige Check-Suite ein, und die Abfrage kam
+  danach. Der Draft trug also **mindestens 30 Sekunden** keinen Kommentar —
+  gegen 11 Sekunden bei #57 und #61.
+
+  Damit steht die Zeile «Draft → kurz» nicht mehr ohne Ausnahme da: Zwei Drafts
+  bekamen die kurze Fassung, einer gar nichts. Was den dritten unterscheidet,
+  geben diese Beobachtungen nicht her — und das Ready hat die Frage
+  abgeschnitten, bevor sie zu Ende beobachtet war. Ein Draft, den man einfach
+  liegen lässt, würde sie beantworten.
 
   Für die Zeile ganz oben heisst das: **«darauf läuft kein Review an» bleibt
   richtig.** Der Draft bekam gerade nicht die Review-Meldung, sondern die andere;
