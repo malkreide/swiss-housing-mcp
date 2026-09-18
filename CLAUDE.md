@@ -588,3 +588,26 @@ läuft ohne Matrix auf 3.11. Ein grünes 3.12/3.13 sagt über ruff nichts aus.
 **Live-Tests:** eigener Job in `ci.yml`, nächtlich per Cron (`29 3 * * *`),
 auf PRs per `if:` übersprungen. Der Lauf wird eingeordnet statt am Exit-Code
 gemessen; ein Befund öffnet oder schliesst ein Issue. DRIFT-005 ist erfüllt.
+
+Die Suite prüft **beide** Quellen. Bis zum 18.9.2026 tat sie das nicht: Zwei
+Tests gegen `api3.geo.admin.ch`, keiner gegen `public.madd.bfs.admin.ch` — und
+ausgerechnet den Dump nannte der Issue-Text des Wächters, während er die
+geprüfte Quelle nicht erwähnte. Ein roter Lauf hätte auf die falsche Quelle
+gezeigt, und eine Drift am Dump wäre gar nicht aufgefallen. Genau die vom
+3.8.2026 sass dort.
+
+Der Dump wird per `HEAD` geprüft, nicht geladen: der Zürcher Dump wiegt 116 MiB.
+Das ist eine **Erreichbarkeits- und Frischewache, keine Schemawache** — die
+Kopfzeilen-Drift von innen fängt sie nicht, dafür bräuchte es Download und
+Entpacken.
+
+Zwei Zahlen dabei sind gemessen und nicht geschätzt:
+
+- Die Frische-Schwelle ist **72 h, nicht 24 h**. Der Cron (03:29 UTC) läuft
+  35 Minuten **vor** der täglichen Aktualisierung der Quelle (gemessen 04:03
+  UTC); der neueste Dump ist zur Testzeit also schon 23.4 h alt. Eine
+  24-h-Schwelle wäre fast jede Nacht rot, ohne dass irgendetwas driftet.
+- Ein **fehlender Pfad antwortet mit 403, nicht 404** — die Quelle ist ein
+  S3-artiger Bucket. Wird der Test so rot, heisst das «Pfad weg», nicht
+  «gesperrt»; wer den Status für eine Sperre hält, sucht ein Zugangsproblem,
+  das keines ist.

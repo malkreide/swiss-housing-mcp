@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import inspect
 from datetime import UTC, datetime, timedelta
-from email.utils import format_datetime
+from email.utils import format_datetime, parsedate_to_datetime
 
 import httpx
 import pytest
@@ -234,6 +234,85 @@ async def test_live_geocode():
     async with httpx.AsyncClient() as http:
         results = await gwr.geoadmin_geocode(http, "Seilergraben 76 Zürich")
     assert any("_" in str(r.get("attrs", {}).get("featureId", "")) for r in results)
+
+
+# Schwelle fuer die Frische des Dumps. NICHT 24 h, und das ist gemessen:
+# Der Nightly-Cron steht auf `29 3 * * *` (03:29 UTC), die Quelle aktualisiert
+# gegen 04:03 UTC — der Lauf faellt also 35 Minuten VOR die Aktualisierung, und
+# der neueste Dump ist zur Testzeit schon 23.4 h alt. Eine 24-h-Schwelle waere
+# damit fast jede Nacht rot, ohne dass irgendetwas driftet: der Test misst dann
+# den Zeitpunkt seines eigenen Laufs, nicht den Vertrag mit der Quelle.
+#
+# 72 h laesst einen ausgefallenen Tag durch und schlaegt an, wenn die Quelle
+# mehrere Tage steht. Die Zahl stuetzt sich auf EINE Messung des
+# Aktualisierungszeitpunkts (18.9.2026, 04:03:42 UTC); wie stark er schwankt,
+# ist unbekannt. Wer sie enger zieht, sollte das vorher nachmessen.
+DUMP_MAX_AGE_HOURS = 72
+
+
+@pytest.mark.live
+async def test_live_dump_quelle_antwortet_und_ist_frisch():
+    """Die zweite Quelle des Servers — bis hierhin von keinem Live-Test beruehrt.
+
+    Die beiden Tests oben pruefen `api3.geo.admin.ch`. Der Dump kommt von
+    `public.madd.bfs.admin.ch`, und genau dort sass am 3.8.2026 die Drift, die
+    vier von sechs Datensaetzen kaputtmachte, waehrend alle Unit-Tests gruen
+    blieben. Der naechtliche Waechter nannte diese Quelle in seinem Issue-Text,
+    pruefte sie aber nicht.
+
+    `HEAD` statt `GET`: der Zuercher Dump wiegt 116 MiB (gemessen 121'664'088
+    Bytes am 18.9.2026). Nichts davon muss geladen werden, um zu sehen, ob die
+    Quelle noch dieselbe Zusage macht.
+
+    **Was dieser Test faengt:** Host weg, Pfad umbenannt, 404, TLS- oder
+    DNS-Fehler, eine HTML-Fehlerseite unter 200, und eine Quelle, die zwar
+    antwortet, aber seit Tagen nicht mehr aktualisiert.
+
+    **Was er NICHT faengt:** eine Drift *innerhalb* des Archivs — genau den Fall
+    vom 3.8.2026, also eine geaenderte Schreibweise einer Kopfzeile oder
+    Spalte. Dafuer braeuchte es einen echten Download samt Entpacken, und das
+    ist eine eigene Abwaegung. Dieser Test ist eine Erreichbarkeits- und
+    Frischewache, keine Schemawache; wer ihn fuer mehr haelt, hat dieselbe
+    Luecke wie vorher, nur mit einem gruenen Haken darueber.
+
+    Geprueft wird `zh` stellvertretend: der Anker-Kanton des Servers. Alle 26
+    zu pruefen hiesse 26 HEAD-Anfragen pro Nacht fuer dieselbe Aussage.
+
+    **Wird dieser Test rot mit 403, heisst das «Pfad weg», nicht «gesperrt».**
+    Die Quelle ist ein S3-artiger Bucket: ein fehlender Schluessel beantwortet
+    sich mit `403 AccessDenied`, nicht mit 404 (gemessen am 18.9.2026 mit einem
+    erfundenen Dateinamen). Das ist genau die Verwechslung, vor der CLAUDE.md
+    unter «ein 403 ist gar keine Auskunft» warnt — nur andersherum: Hier HAT die
+    Quelle geantwortet, und die Antwort lautet, dass es die Datei nicht gibt.
+    Wer den Status fuer eine Sperre haelt, sucht ein Zugangsproblem, das keines
+    ist.
+    """
+    url = f"{gwr.MADD_BASE}/zh.zip"
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as http:
+        resp = await http.head(url)
+
+    assert resp.status_code == 200, f"{url} antwortete mit HTTP {resp.status_code}"
+
+    content_type = resp.headers.get("content-type", "")
+    assert "zip" in content_type.lower(), (
+        f"{url} liefert {content_type!r} statt eines ZIP — eine Fehlerseite unter 200?"
+    )
+
+    # Untergrenze weit unter dem gemessenen Wert: Sie soll eine Fehlerseite
+    # ausschliessen, nicht die Groesse des Dumps festschreiben.
+    length = int(resp.headers.get("content-length", "0"))
+    assert length > 1_000_000, f"{url} meldet nur {length} Bytes — das ist kein Dump"
+
+    last_modified = resp.headers.get("last-modified")
+    assert last_modified, f"{url} nennt kein `last-modified` — Frische nicht pruefbar"
+    stand = parsedate_to_datetime(last_modified)
+    alter = datetime.now(UTC) - stand
+    assert alter <= timedelta(hours=DUMP_MAX_AGE_HOURS), (
+        f"{url} ist seit {alter.total_seconds() / 3600:.1f} h unveraendert "
+        f"(Stand {stand.isoformat()}). Die Quelle aktualisiert normalerweise "
+        "taeglich; steht sie, liefert der Server veraltete Zahlen, ohne dass "
+        "irgendein Aufruf scheitert."
+    )
 
 
 async def _instant_sleep(_seconds: float) -> None:
