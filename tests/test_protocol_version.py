@@ -28,10 +28,18 @@ Nachgemessen statt aus Konstantennamen geschlossen: die Aushandlung steht in
 
 — sie haengt an keinem Transport, gilt also fuer stdio ebenso wie fuer HTTP.
 
-Ohne gemessenen Teil: dieses Repo baut keine ASGI-App, durch die sich ein
-`initialize` schicken liesse. Die Zusicherungen unten haengen deshalb an den
-SDK-Konstanten. Das ist die schwaechere Form, und sie steht hier benannt statt
-unausgesprochen.
+Die Zusicherungen unten haengen an den SDK-Konstanten — die schwaechere Form.
+Hier stand als Begruendung, dieses Repo baue keine ASGI-App, durch die sich ein
+`initialize` schicken liesse. Das war falsch: `mcp.streamable_http_app()` baut
+genau eine, und `__main__.py` faehrt sie unter
+`SWISS_HOUSING_TRANSPORT=streamable-http` produktiv. Die Behauptung hat den
+gemessenen Teil zwei Fassungen lang ersetzt, statt ihn nur zu vermissen.
+
+Gemessen wird er jetzt in `tests/test_modern_era.py`: echte Anfragen beider
+Aeren durch die App, Aushandlung am Antwortkoerper abgelesen. Dieses Modul
+bleibt daneben bestehen und tut etwas anderes — es faengt einen SDK-Bump ab,
+der eine Revision verschiebt, *bevor* jemand die Messung liest. Beide Formen
+zusammen; die eine ersetzt die andere nicht.
 """
 
 from __future__ import annotations

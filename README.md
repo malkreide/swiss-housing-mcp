@@ -125,16 +125,28 @@ other era is refused.
 | `initialize` handshake | `2024-11-05` … **`2025-11-25`** | What today's clients speak. The server answers with the revision asked for, or with the `2025-11-25` ceiling when the request asks for something newer. |
 | Per-request envelope | **`2026-07-28`** | A request carrying the `2026-07-28` `_meta` envelope opens a modern connection. |
 
-Both revisions are pinned in
-[`tests/test_protocol_version.py`](tests/test_protocol_version.py) and asserted
-against the installed SDK, so a Dependabot bump of `mcp` cannot move either one
-silently. This server builds no ASGI app to send an `initialize` through, so
-the gate asserts the SDK constants rather than a measured response — the
-weaker form, named rather than left unsaid.
+Both eras are **measured**, not inferred:
+[`tests/test_modern_era.py`](tests/test_modern_era.py) drives real requests of
+each era through this server's own ASGI app — the one `__main__.py` serves
+under `SWISS_HOUSING_TRANSPORT=streamable-http` — and reads the negotiated
+revision off the response body. Alongside it,
+[`tests/test_protocol_version.py`](tests/test_protocol_version.py) pins both
+revisions against the installed SDK, so a Dependabot bump of `mcp` breaks the
+build *before* anyone reads the measurement.
 
 Note that the SDK's `LATEST_PROTOCOL_VERSION` is an alias for the **modern**
 era, not for the handshake era — pinning against it alone would leave the era
 that current clients actually negotiate free to drift.
+
+**Identity on the modern era.** The `2026-07-28` era has no `initialize`
+handshake: a connection is a single request carrying a `_meta` envelope. So
+`server/discover` is the only channel through which a modern client learns
+anything about this server, and the `serverInfo` block the SDK stamps into
+*every* result is the only place its identity appears. This server therefore
+declares `version`, `title`, `description`, `websiteUrl` and `instructions`.
+`description` and `websiteUrl` are read from the package metadata rather than
+repeated as literals — the SDK fills none of them in, and an unversioned server
+announces an empty `version` on every single response.
 
 **Update policy.** When the gate fails, do not edit the constant blindly: read
 the spec changelog between the two revisions, verify the server still behaves,

@@ -9,13 +9,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Spec `2026-07-28` nativ: Identitaet auf der modernen Aera, und beide Aeren
+  gemessen.** Die moderne Aera kennt keinen `initialize`-Handshake — eine
+  Verbindung ist eine einzige Anfrage mit `_meta`-Envelope. Damit ist
+  `server/discover` der einzige Kanal, ueber den ein moderner Client etwas
+  ueber diesen Server erfaehrt, und der `serverInfo`-Block, den das SDK in
+  *jedes* Resultat stempelt, die einzige Stelle, an der seine Identitaet steht.
+  `MCPServer(...)` bekommt deshalb `version`, `title`, `description`,
+  `website_url` und `instructions`.
+
+  Der Befund, der das ausgeloest hat: Der Server meldete `"version": ""` — auf
+  jeder Antwort, in beiden Aeren. Das SDK fuellt nichts nach, sein eigener
+  Docstring sagt es («An unversioned server reports an empty `version`; the SDK
+  never substitutes its own»). Alle Gates blieben gruen, und zwar zu Recht:
+  `check_version_sync.py` vergleicht die *deklarierten* Versionen
+  (`server.json`, README-Badges) und verbietet Literale in `src/` — was der
+  Server auf dem Draht ankuendigt, hat nie jemand gelesen.
+
+  `description` und `website_url` kommen aus den Paket-Metadaten
+  (`pyproject.toml` → `Summary` / `Project-URL: Homepage`), nicht als Literal:
+  eine zweite Kopie waere derselbe Drift-Anfang wie eine hartkodierte Version,
+  nur ohne Gate, das ihn faengt. `title` ist die einzige frei gewaehlte Angabe
+  und hat kein Gegenstueck, von dem sie abweichen koennte.
+
+- **`tests/test_modern_era.py`: die Aeren gemessen statt erschlossen.** Echte
+  Anfragen beider Aeren durch `mcp.streamable_http_app()` — dieselbe App, die
+  `__main__.py` unter `SWISS_HOUSING_TRANSPORT=streamable-http` ausliefert.
+  Statuscode, Aushandlung und Antwortkoerper sind abgelesen, nicht aus
+  Konstantennamen geschlossen.
+
+  Damit faellt die Begruendung weg, die oben stand: dass dieses Repo keine
+  ASGI-App baue. Es baut eine, und sie ist der ausgelieferte HTTP-Transport —
+  die Behauptung hat den gemessenen Teil zwei Fassungen lang ersetzt, statt ihn
+  nur zu vermissen. `test_protocol_version.py` bleibt daneben bestehen und tut
+  etwas anderes: es faengt einen SDK-Bump ab, *bevor* jemand die Messung liest.
+
+  Zwei Eigenheiten, beide beim Aufbau ueber den Fuss gefallen und im Docstring
+  festgehalten: Der Testhost muss `127.0.0.1` sein, sonst faellt Starlettes
+  Vorgabe `testserver` am DNS-Rebinding-Schutz mit HTTP 421 — was wie ein
+  kaputter Test aussieht, obwohl der Schutz das Richtige tut. Und die moderne
+  Aera wird ueber den `MCP-Protocol-Version`-Header betreten; fehlt er, landet
+  die Anfrage auf dem Legacy-Pfad und antwortet ebenfalls mit 200. Eine
+  Negativkontrolle haelt genau das fest — ohne sie koennte die ganze Datei
+  gruen sein, ohne je modern gesprochen zu haben.
+
 - **Frischehinweise auf `tools/list` und `server/discover`** (SEP-2549, Spec
   `2026-07-28`): `ttlMs` 300000, `cacheScope` `public`. Das SDK setzt beides von
   sich aus auf «sofort veraltet, nie geteilt» — wer nichts übergibt, verhält
   sich also nicht neutral, sondern lässt jeden Client bei jeder Verbindung neu
   auflisten, für eine Liste, die beim Import feststeht und für jeden Aufrufer
-  dieselbe ist. `prompts/list` und `resources/list` bleiben ungesetzt: dieser
-  Server registriert weder das eine noch das andere.
+  dieselbe ist. `prompts/list` und `resources/list` bleiben ungesetzt — aber
+  nicht, weil es die Fläche nicht gäbe: `MCPServer` registriert beide Handler
+  von sich aus, sie stehen in `server/discover` unter `capabilities`, und eine
+  `2026-07-28`-Anfrage bekommt HTTP 200 mit `[]` (nachgemessen). Was fehlt, ist
+  Inhalt, nicht die Methode; eine leere Liste ist wenige Bytes, der Hinweis
+  spart einen Rundlauf statt einer Übertragung.
 
 - **Protokoll-Gate: beide Spec-Aeren gepinnt und geprueft**
   (`tests/test_protocol_version.py`). `mcp` 2.x bedient zwei Aeren ueber
@@ -26,9 +74,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   aushandeln. Beide sind jetzt einzeln gepinnt, ein Dependabot-Bump von
   `mcp` kann keine davon still verschieben.
 
-  Ohne gemessenen Teil: dieser Server baut keine ASGI-App, durch die sich ein
-  `initialize` schicken liesse. Das Gate haengt deshalb an den SDK-Konstanten —
-  die schwaechere Form, im Docstring benannt statt verschwiegen.
+  Das Gate haengt an den SDK-Konstanten — die schwaechere Form. Als Begruendung
+  stand hier, dieser Server baue keine ASGI-App, durch die sich ein `initialize`
+  schicken liesse; das war falsch und ist weiter unten richtiggestellt.
 
   Beide READMEs beschreiben die Aeren; ein Test haelt jede Sprache einzeln
   dagegen — im Portfolio sind EN und DE desselben Repos schon dreimal

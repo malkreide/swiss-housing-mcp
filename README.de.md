@@ -125,16 +125,29 @@ aus der jeweils anderen Aera wird abgewiesen.
 | `initialize`-Handshake | `2024-11-05` … **`2025-11-25`** | Was heutige Clients sprechen. Der Server antwortet mit der angefragten Revision — oder mit der Obergrenze `2025-11-25`, wenn die Anfrage etwas Neueres verlangt. |
 | Pro-Request-Envelope | **`2026-07-28`** | Eine Anfrage mit dem `2026-07-28`-`_meta`-Envelope oeffnet eine moderne Verbindung. |
 
-Beide Revisionen sind in
-[`tests/test_protocol_version.py`](tests/test_protocol_version.py) gepinnt und
-werden gegen das installierte SDK geprueft; ein Dependabot-Bump von `mcp` kann
-also keine der beiden still verschieben. Dieser Server baut keine ASGI-App, durch die sich ein `initialize`
-schicken liesse; das Gate sichert deshalb die SDK-Konstanten statt einer
-gemessenen Antwort — die schwaechere Form, benannt statt verschwiegen.
+Beide Aeren sind **gemessen**, nicht erschlossen:
+[`tests/test_modern_era.py`](tests/test_modern_era.py) schickt echte Anfragen
+jeder Aera durch die ASGI-App dieses Servers — dieselbe, die `__main__.py` unter
+`SWISS_HOUSING_TRANSPORT=streamable-http` ausliefert — und liest die
+ausgehandelte Revision am Antwortkoerper ab. Daneben pinnt
+[`tests/test_protocol_version.py`](tests/test_protocol_version.py) beide
+Revisionen gegen das installierte SDK; ein Dependabot-Bump von `mcp` bricht den
+Build also, *bevor* jemand die Messung liest.
 
 Zu beachten: `LATEST_PROTOCOL_VERSION` im SDK ist ein Alias auf die **moderne**
 Aera, nicht auf die Handshake-Aera — wer nur dagegen pinnt, laesst genau die
 Aera frei wandern, die heutige Clients tatsaechlich aushandeln.
+
+**Identitaet in der modernen Aera.** Die Aera `2026-07-28` kennt keinen
+`initialize`-Handshake: eine Verbindung besteht aus einer einzigen Anfrage mit
+`_meta`-Envelope. Damit ist `server/discover` der einzige Kanal, ueber den ein
+moderner Client etwas ueber diesen Server erfaehrt, und der `serverInfo`-Block,
+den das SDK in *jedes* Resultat stempelt, die einzige Stelle, an der seine
+Identitaet steht. Dieser Server deklariert deshalb `version`, `title`,
+`description`, `websiteUrl` und `instructions`. `description` und `websiteUrl`
+kommen aus den Paket-Metadaten statt als Literal — das SDK fuellt keines der
+Felder nach, und ein Server ohne Version kuendigt auf *jeder* Antwort eine
+leere an.
 
 **Update-Politik.** Faellt das Gate, die Konstante nicht blind nachziehen: erst
 das Spec-Changelog zwischen den beiden Revisionen lesen, pruefen, ob sich der
