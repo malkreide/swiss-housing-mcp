@@ -297,17 +297,36 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   kurze etwas anderes, das schon am Draft anschlägt. Zu den zwei Töpfen (siehe
   unten) passt es ebenfalls: Jeder Pfad meldet den seinen.
 
-  Am 18.9.2026 um 14:14 kam ein dritter Auslöser dazu und fügt sich ein: Drei
-  Kommentare `@codex review` auf den gemergten PRs #56, #58 und #59 bekamen
-  binnen 8 bis 9 Sekunden alle die **lange** Fassung. Der Kommentar ist der
-  Review-Pfad, meldet also dessen Topf — wie «ready». Das ist keine zweite
-  Kontrolle wie die Tabelle oben (anderer Tag, andere PRs), aber es gibt keinen
-  Fall, der der Zuordnung widerspricht.
+  Derselbe Tag hat die Zuordnung noch viermal bestätigt, mit einem dritten
+  Auslöser und einer Wiederholung des ersten:
 
-  Nebenbei fällt dabei eine brauchbare Zeitmarke ab: Die Absage kommt in
-  derselben Grössenordnung wie die Statustabelle beim Erfolg (9 bis 11 s, siehe
-  unten). Nach einer Viertelminute ohne jede Regung ist also keines von beidem
-  mehr unterwegs.
+  | Zeit | Auslöser | Fassung | Latenz |
+  |---|---|---|---|
+  | 14:14:19 | Kommentar `@codex review` (#56) | lang | 8 s |
+  | 14:14:24 | Kommentar `@codex review` (#58) | lang | 9 s |
+  | 14:14:29 | Kommentar `@codex review` (#59) | lang | 9 s |
+  | 14:17:53 | PR #61 als Draft angelegt | kurz | 11 s |
+
+  Der Kommentar ist also der Review-Pfad und meldet dessen Topf, wie «ready».
+  Und der Draft bekommt wieder die kurze Fassung — bei #57 am Morgen nach
+  denselben 11 Sekunden.
+
+  Gezählt wird hier nur, was **beobachtet** ist. Die Sperrmeldungen auf #58
+  und #59 vom Vormittag (07:57 und 08:31) bleiben draussen: Dass dort «ready»
+  der Auslöser war, ist aus dem Arbeitsablauf geschlossen und nicht gesehen.
+  Aus der langen Fassung darauf zurückzuschliessen wäre zirkulär — sie ist ja
+  das, was belegt werden soll.
+
+  Bleiben sechs belegte Fälle an einem Tag: zweimal Draft (kurz), einmal
+  «ready» (lang, #57), dreimal Kommentar (lang). Keiner widerspricht. Die
+  Tabelle oben bleibt trotzdem die bessere Messung, weil sie beide Fassungen
+  an demselben PR vier Minuten auseinander zeigt; zwischen den Fällen hier
+  liegen Stunden, in denen sich der Kontingentstand nachweislich geändert hat.
+
+  Nebenbei fällt eine brauchbare Zeitmarke ab: Die Absage kommt in derselben
+  Grössenordnung wie die Statustabelle beim Erfolg (9 bis 11 s, siehe unten) —
+  viermal gemessen zwischen 8 und 11 Sekunden. Nach einer Viertelminute ohne
+  jede Regung ist also keines von beidem mehr unterwegs.
 
   Für die Zeile ganz oben heisst das: **«darauf läuft kein Review an» bleibt
   richtig.** Der Draft bekam gerade nicht die Review-Meldung, sondern die andere;
