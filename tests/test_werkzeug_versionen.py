@@ -16,8 +16,16 @@ import pathlib
 import re
 import tomllib
 
+import pytest
+
 _ROOT = pathlib.Path(__file__).resolve().parents[1]
 _WORKFLOWS = _ROOT / ".github" / "workflows"
+_CLAUDE_MD = _ROOT / "CLAUDE.md"
+
+# Die Pin-Form, und nur sie. Eine Jahreszahl oder ein erzaehltes «der Bump auf
+# 0.16.1» ist Geschichte und darf stehen bleiben; `ruff==X.Y.Z` behauptet
+# dagegen einen geltenden Pin und ist damit eine zweite Quelle.
+_RUFF_PIN = re.compile(r"ruff==\d+\.\d+\.\d+")
 
 # Formen, in denen ein Schritt ein Paket eigenstaendig installiert. Die erste
 # Fassung dieses Tests kannte nur `pip install ruff` und liess damit
@@ -126,3 +134,39 @@ def test_der_erkenner_kennt_die_gaengigen_installationsformen() -> None:
     assert not uebersehen, f"Erkenner uebersieht: {uebersehen}"
     fehlalarm = [z for z in darf_nicht_treffen if _installiert_ruff(z)]
     assert not fehlalarm, f"Erkenner schlaegt faelschlich an: {fehlalarm}"
+
+
+def test_kein_ruff_pin_in_der_projektanweisung() -> None:
+    """Die dritte Quelle, die es fast unbemerkt gab.
+
+    Die zwei Tests oben halten `pyproject.toml` und die Workflows auseinander.
+    `CLAUDE.md` stand ausserhalb beider — und trug den Satz «ruff: genau eine
+    Quelle — `ruff==0.16.3`», waehrend der Pin auf 0.16.5 lief. Ein
+    Dependabot-Bump zieht pyproject nach, die Projektanweisung nicht.
+
+    Das ist nicht bloss eine schiefe Doku. Teil 1 derselben Datei verlangt, die
+    Gates lokal mit der GEPINNTEN Version zu fahren; wer die Zahl von dort nahm,
+    installierte die alte und bekam Formatabweichungen, die niemand verursacht
+    hat — der Fehler, vor dem die Datei selbst warnt.
+
+    Verboten ist nur die Pin-Form `ruff==X.Y.Z`. Erzaehlte Versionen ohne sie
+    («der Bump auf 0.16.1») beschreiben Vergangenes und bleiben erlaubt.
+    """
+    if not _CLAUDE_MD.is_file():
+        # Uebersprungen, nicht bestanden: Diese Datei wird zwischen den Repos
+        # kopiert, und ein stilles `return` liesse den Test dort gruen wirken,
+        # wo er nichts geprueft hat.
+        pytest.skip("kein CLAUDE.md in diesem Repo")
+
+    treffer = sorted(
+        {
+            f"Zeile {nr}: {zeile.strip()}"
+            for nr, zeile in enumerate(_CLAUDE_MD.read_text(encoding="utf-8").splitlines(), 1)
+            if _RUFF_PIN.search(zeile)
+        }
+    )
+    assert not treffer, (
+        "CLAUDE.md nennt einen ruff-Pin und ist damit eine zweite Versionsquelle, "
+        f"die ein Dependabot-Bump nicht nachzieht: {treffer}. Auf den Pin verweisen "
+        "statt ihn zu wiederholen — die Zahl steht in pyproject.toml."
+    )
