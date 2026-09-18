@@ -297,8 +297,8 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   kurze etwas anderes, das schon am Draft anschlägt. Zu den zwei Töpfen (siehe
   unten) passt es ebenfalls: Jeder Pfad meldet den seinen.
 
-  Derselbe Tag hat die Zuordnung noch viermal bestätigt, mit einem dritten
-  Auslöser und einer Wiederholung des ersten:
+  Derselbe Tag hat die Zuordnung noch fünfmal bestätigt — mit einem dritten
+  Auslöser und, ungeplant, mit einer **zweiten vollständigen Kontrolle**:
 
   | Zeit | Auslöser | Fassung | Latenz |
   |---|---|---|---|
@@ -306,10 +306,17 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   | 14:14:24 | Kommentar `@codex review` (#58) | lang | 9 s |
   | 14:14:29 | Kommentar `@codex review` (#59) | lang | 9 s |
   | 14:17:53 | PR #61 als Draft angelegt | kurz | 11 s |
+  | 14:20:47 | **derselbe** PR #61 auf ready gesetzt | lang | ~3 s |
 
-  Der Kommentar ist also der Review-Pfad und meldet dessen Topf, wie «ready».
-  Und der Draft bekommt wieder die kurze Fassung — bei #57 am Morgen nach
-  denselben 11 Sekunden.
+  Die letzten zwei Zeilen sind der Aufbau der Tabelle oben, noch einmal und an
+  einem anderen PR: gleicher PR, gleiches Konto, gleicher Kontingentstand, zwei
+  Minuten und 54 Sekunden auseinander, nur der Auslöser verschieden — und
+  wieder kurz beim Draft, lang beim Ready. Der Kommentar reiht sich beim
+  Review-Pfad ein, wie «ready».
+
+  Entstanden ist sie nicht durch Planung: Der PR war als Draft angelegt worden,
+  *weil* die Sperre bekannt war, und wurde dann von aussen auf ready gesetzt
+  und gemergt. Die Kontrolle ist ein Nebenprodukt dieser Handgriffe.
 
   Gezählt wird hier nur, was **beobachtet** ist. Die Sperrmeldungen auf #58
   und #59 vom Vormittag (07:57 und 08:31) bleiben draussen: Dass dort «ready»
@@ -317,16 +324,21 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   Aus der langen Fassung darauf zurückzuschliessen wäre zirkulär — sie ist ja
   das, was belegt werden soll.
 
-  Bleiben sechs belegte Fälle an einem Tag: zweimal Draft (kurz), einmal
-  «ready» (lang, #57), dreimal Kommentar (lang). Keiner widerspricht. Die
-  Tabelle oben bleibt trotzdem die bessere Messung, weil sie beide Fassungen
-  an demselben PR vier Minuten auseinander zeigt; zwischen den Fällen hier
-  liegen Stunden, in denen sich der Kontingentstand nachweislich geändert hat.
+  Bleiben sieben belegte Fälle an einem Tag: zweimal Draft (kurz), zweimal
+  «ready» (lang), dreimal Kommentar (lang). Keiner widerspricht, und die
+  Zuordnung ruht jetzt auf **zwei** unabhängigen Kontrollen statt einer.
 
-  Nebenbei fällt eine brauchbare Zeitmarke ab: Die Absage kommt in derselben
+  Was das nicht leistet: Beide Kontrollen liefen unter erschöpftem Kontingent.
+  Sie verdoppeln die Evidenz für die Zuordnung, nicht die für ihre Ursache —
+  der Vorbehalt weiter unten steht unverändert.
+
+  Nebenbei fällt eine Zeitmarke ab: Die Absage kommt in derselben
   Grössenordnung wie die Statustabelle beim Erfolg (9 bis 11 s, siehe unten) —
-  viermal gemessen zwischen 8 und 11 Sekunden. Nach einer Viertelminute ohne
-  jede Regung ist also keines von beidem mehr unterwegs.
+  fünfmal gemessen zwischen rund 3 und 11 Sekunden. Die 3 s sind die
+  unschärfste der fünf: Sie messen gegen den Zeitpunkt des Ready-Ereignisses
+  aus dem Webhook, nicht gegen einen von GitHub abgefragten Zeitstempel. Für
+  den Zweck reicht es — nach einer Viertelminute ohne jede Regung ist keines
+  von beidem mehr unterwegs.
 
   Für die Zeile ganz oben heisst das: **«darauf läuft kein Review an» bleibt
   richtig.** Der Draft bekam gerade nicht die Review-Meldung, sondern die andere;
@@ -476,6 +488,12 @@ mergen. Am 21./22.8. lagen zwischen «ready for review» und Merge mehrfach drei
 bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst und
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
+
+Das ist kein abgeschlossenes Kapitel vom August: Am 18.9.2026 wurde PR #61 um
+14:20:44 auf ready gesetzt und um 14:20:49 gemergt — fünf Sekunden. Verloren
+ging dabei nichts, aber nur, weil das Kontingent ohnehin gesperrt war und gar
+kein Lauf zu verpassen war. Bei freiem Kontingent wäre es der Fall, den dieser
+Absatz beschreibt.
 
 Wie viel Zeit, ist inzwischen viermal gemessen, und die Spanne ist weit:
 
