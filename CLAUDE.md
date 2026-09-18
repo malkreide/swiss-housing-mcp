@@ -265,7 +265,33 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   Reaktion; am 29.8. kam die Reaktion und keine Meldung. Der Kasten trifft
   damit weder das eine noch das andere zuverlässig — er ist keine Quelle, auch
   nicht in seiner neuen Fassung.
-- **Der PR ist ein Draft** — darauf läuft Codex nicht an.
+- **Der PR ist ein Draft** — darauf läuft kein Review an. Still ist ein Draft
+  deswegen aber nicht: Am 18.9.2026 bekam PR #57 dieses Repos **11 Sekunden
+  nach dem Anlegen** einen Kommentar, ohne je auf ready gesetzt worden zu sein
+  (`draft: true` beim Lesen). Etwas hat den Draft also gesehen und weit genug
+  ausgewertet, um zu antworten. Die Zeile «darauf läuft Codex nicht an» galt
+  bis dahin als vollständig und ist es nicht.
+
+  Was der Draft bekam, war die Kontingent-Meldung — und zwar in einer **anderen
+  Fassung** als die eine Minute zuvor auf #56:
+
+  ```
+  You have reached your Codex usage limits for code reviews.
+  ```
+  ```
+  You have reached your Codex usage limits.
+  ```
+
+  Der Zusatz «for code reviews» fehlt. Das passt dazu, dass Code-Reviews einen
+  eigenen Topf haben (siehe unten): Die zweite Meldung könnte das allgemeine
+  Kontingent betreffen und damit einen ganz anderen Pfad als den Review. Sie
+  deshalb in dieselbe Schublade zu legen, wäre genau der Fehler, vor dem der
+  Absatz über den Kommentarzähler warnt — zwei Texte, ein Name.
+
+  Offen bleibt daher: ob auf einem Draft bei freiem Kontingent ein Review
+  gelaufen wäre, ob die Antwort überhaupt vom Review-Pfad kam, und ob ein
+  Draft auch ohne Sperre einen Kommentar bekommt. Belegt ist allein, dass ein
+  Draft eine Antwort bekam.
 - **Das Kontingent ist weg** — dann schreibt er die Meldung oben.
 - **Für das Repo fehlt eine Environment** — dann schreibt er:
 
