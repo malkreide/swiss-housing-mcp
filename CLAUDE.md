@@ -297,6 +297,18 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   kurze etwas anderes, das schon am Draft anschlägt. Zu den zwei Töpfen (siehe
   unten) passt es ebenfalls: Jeder Pfad meldet den seinen.
 
+  Am 18.9.2026 um 14:14 kam ein dritter Auslöser dazu und fügt sich ein: Drei
+  Kommentare `@codex review` auf den gemergten PRs #56, #58 und #59 bekamen
+  binnen 8 bis 9 Sekunden alle die **lange** Fassung. Der Kommentar ist der
+  Review-Pfad, meldet also dessen Topf — wie «ready». Das ist keine zweite
+  Kontrolle wie die Tabelle oben (anderer Tag, andere PRs), aber es gibt keinen
+  Fall, der der Zuordnung widerspricht.
+
+  Nebenbei fällt dabei eine brauchbare Zeitmarke ab: Die Absage kommt in
+  derselben Grössenordnung wie die Statustabelle beim Erfolg (9 bis 11 s, siehe
+  unten). Nach einer Viertelminute ohne jede Regung ist also keines von beidem
+  mehr unterwegs.
+
   Für die Zeile ganz oben heisst das: **«darauf läuft kein Review an» bleibt
   richtig.** Der Draft bekam gerade nicht die Review-Meldung, sondern die andere;
   die Review-Meldung kam erst mit «ready». Neu ist nur, dass ein Draft überhaupt
@@ -347,12 +359,18 @@ vier Prüfungen durch, Codex läuft an und kommt bis ans Ende. Nur trägt das
 Ergebnis keine der beiden Formen, an denen dieser Abschnitt es zu erkennen
 gelernt hat — kein Review-Objekt, keine Befundlos-Meldung.
 
-Getragen hat es beide Male die 👍 am PR — #41 und #42 tragen je eine, und
-beide Kommentare keine. Das ist die Umkehrung des 23.8.: Damals kam in sechs
-Repos die Befundlos-Meldung und in keinem die Reaktion, hier kommt zweimal die
-Reaktion und keine Meldung. Die beiden Träger vertreten einander also nicht
-verlässlich; wer nur einen davon abfragt, zählt je nach Tag Geprüftes als
-ungeprüft oder umgekehrt.
+Getragen hat es alle drei Male die 👍 am PR — #41, #42 und #60 tragen je eine,
+und alle drei Kommentare keine. Das ist die Umkehrung des 23.8.: Damals kam in
+sechs Repos die Befundlos-Meldung und in keinem die Reaktion, hier kommt
+dreimal die Reaktion und keine Meldung. Die beiden Träger vertreten einander
+also nicht verlässlich; wer nur einen davon abfragt, zählt je nach Tag
+Geprüftes als ungeprüft oder umgekehrt.
+
+Der dritte Fall ist PR #60 dieses Repos vom 18.9.2026, drei Wochen nach den
+beiden anderen: Statuszeile `✅ Completed` auf `2977c2b`, `get_reviews` leer,
+der Kommentar ohne Reaktion, der PR mit `+1: 1`. Die Form hängt also nicht an
+einem einzelnen Tag. Auch hier lief der Merge voraus — `closed_at` 10:08:28,
+`Completed` 10:08:34 —, der Lauf überdauerte ihn um sechs Sekunden.
 
 Zwei Vorbehalte standen hier. Der erste gilt weiter: **nicht belegt, dass die
 Reaktion von Codex stammt** — `reactions` liefert nur die Zahl, nicht den
@@ -502,6 +520,20 @@ geöffnet und durch neue Auslöser wieder erschöpft haben. Das auszuschliessen
 bräuchte den Nachweis, dass in der ganzen Spanne kein einziger Review durchlief
 — den gibt es nicht, weil nur Fehlschläge beobachtet wurden. Eine lange Reihe
 von Fehlschlägen belegt eine lange Reihe von Fehlschlägen, nicht ihre Ursache.
+
+Am 18.9.2026 liess sich genau dieses Öffnen und Wiederschliessen zum ersten Mal
+**direkt beobachten**, statt es bloss für möglich zu halten: gesperrt um 06:41,
+07:57 und 08:31, frei um 10:07 (PR #60 lief durch), wieder gesperrt um 14:14.
+Was im August offenbleiben musste, ist damit für diesen Tag entschieden — eine
+Reihe von Sperrmeldungen ist keine durchgehende Sperre.
+
+Die praktische Folge ist unbequem: **Ein beobachteter Erfolg altert.** Hier
+wurde aus «um 10:07 lief ein Review durch» geschlossen, das Kontingent sei
+zurück, und darauf gestützt drei Anfragen abgesetzt; acht Sekunden später kam
+die Sperre. Der Schluss war nicht falsch über 10:07 — er war falsch über 14:14,
+und dazwischen lagen vier Stunden, in denen niemand gemessen hat. Das ist
+dieselbe Asymmetrie wie beim 403 weiter oben, nur zeitlich statt über
+Zugangspfade: Eine gelungene Abfrage ist keine Entwarnung für eine spätere.
 
 Zeigt das Dashboard freies Kontingent, während Reviews weiter scheitern, ist
 das ein bekannter Fehler bei mehreren verbundenen Konten — dann den
