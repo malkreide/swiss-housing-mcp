@@ -16,7 +16,7 @@ from mcp.server.caching import CacheableMethod, CacheHint
 from mcp.server.mcpserver import MCPServer
 
 from . import gwr
-from ._version import __version__
+from ._version import __homepage__, __summary__, __version__
 from .models import (
     BBoxStatsResponse,
     Building,
@@ -46,9 +46,15 @@ from .models import (
 # Sobald eine Liste vom Aufrufer abhaengt, muss der Scope im selben Commit auf
 # `private` wechseln.
 #
-# `prompts/list` und `resources/list` bleiben ungesetzt: dieser Server
-# registriert weder Prompts noch Ressourcen, und ein Hinweis darauf beschriebe
-# eine Flaeche, die es nicht gibt.
+# `prompts/list` und `resources/list` bleiben ungesetzt — aber nicht, weil es
+# die Flaeche nicht gaebe. Das stand hier und war falsch: `MCPServer` registriert
+# beide Handler von sich aus, sie stehen in `server/discover` unter
+# `capabilities`, und eine 2026-07-28-Anfrage bekommt HTTP 200 mit `[]`
+# (nachgemessen in `tests/test_modern_era.py`). Was fehlt, ist Inhalt, nicht die
+# Methode. Ungesetzt bleiben sie trotzdem: eine leere Liste ist eine Antwort von
+# wenigen Bytes, und der Hinweis spart einen Rundlauf pro Verbindung statt einer
+# Uebertragung. Sobald hier ein Prompt oder eine Ressource registriert wird,
+# gehoeren beide in dieselbe Abwaegung wie `tools/list`.
 LIST_CACHE_TTL_MS = 300_000
 
 # Annotiert, nicht inferiert: `MCPServer` nimmt
@@ -60,7 +66,50 @@ CACHE_HINTS: dict[CacheableMethod, CacheHint] = {
     "server/discover": CacheHint(ttl_ms=LIST_CACHE_TTL_MS, scope="public"),
 }
 
-mcp = MCPServer("swiss-housing-mcp", cache_hints=CACHE_HINTS)
+# Spec `2026-07-28` kennt keinen `initialize`-Handshake: eine moderne Verbindung
+# besteht aus einer einzigen Anfrage mit `_meta`-Envelope. Damit ist
+# `server/discover` der EINZIGE Kanal, ueber den ein moderner Client etwas ueber
+# diesen Server erfaehrt — und der `serverInfo`-Stempel, den das SDK in *jedes*
+# Resultat setzt, die einzige Stelle, an der seine Identitaet steht.
+#
+# Ohne diese Argumente meldete der Server `{"name": ..., "version": ""}` — auf
+# jeder Antwort, in beiden Aeren. Das SDK fuellt nichts nach; sein eigener
+# Docstring sagt es: «An unversioned server reports an empty `version`; the SDK
+# never substitutes its own.» Alle Gates blieben gruen, weil
+# `check_version_sync.py` die *deklarierten* Versionen vergleicht
+# (`server.json`, README-Badges) und Literale in `src/` verbietet — aber nie
+# gelesen hat, was der Server auf dem Draht ankuendigt.
+#
+# `description` und `website_url` kommen aus den Paket-Metadaten, nicht aus
+# einem Literal: beide stehen schon in `pyproject.toml`, und eine zweite Kopie
+# hier waere derselbe Drift-Anfang wie eine hartkodierte Version. `title` ist
+# die einzige frei gewaehlte Angabe — ein Anzeigename hat kein Gegenstueck, von
+# dem er abweichen koennte.
+mcp = MCPServer(
+    "swiss-housing-mcp",
+    title="Swiss Housing Register (GWR/RegBL)",
+    version=__version__,
+    description=__summary__,
+    website_url=__homepage__,
+    instructions=(
+        "Swiss Federal Register of Buildings and Dwellings (GWR/RegBL). "
+        "EGID identifies a building, EWID a dwelling within it; both are the "
+        "join keys used across Swiss administrative data.\n\n"
+        "Start from `address_to_egid` when you have an address, or "
+        "`lookup_building` when you already have an EGID — both hit the live "
+        "geo.admin.ch API and need no download.\n\n"
+        "The statistical tools (`new_construction`, `construction_pipeline`, "
+        "`municipality_housing_stats`, `buildings_in_bbox`, `lookup_dwellings`) "
+        "read a cantonal dump that is fetched on first use, so the first call "
+        "for a canton is slow and later ones are not. Municipalities are "
+        "identified by their BFS number (261 = City of Zurich); pass `canton` "
+        "explicitly when a BFS number cannot be resolved.\n\n"
+        "Numeric GWR codes (GSTAT, GKAT, WSTAT) are decoded by `explain_code`. "
+        "`dump_status` reports cache state and is the entry point when a "
+        "source looks unreachable — it never returns a silently empty record."
+    ),
+    cache_hints=CACHE_HINTS,
+)
 store = gwr.GwrStore()
 
 GSTAT_LABELS = {
