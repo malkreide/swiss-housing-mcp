@@ -2,7 +2,7 @@
 
 > Teil des [Swiss Public Data MCP Portfolio](https://github.com/malkreide/swiss-public-data-mcp) — Open-Source-MCP-Server, die KI-Agenten mit Schweizer öffentlichen Daten verbinden. **Privates Projekt, unabhängig von jeglichem Arbeitgeber oder institutioneller Zugehörigkeit.**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-blue)](pyproject.toml)
 [![MCP](https://img.shields.io/badge/MCP-server-8A2BE2)](https://modelcontextprotocol.io/)

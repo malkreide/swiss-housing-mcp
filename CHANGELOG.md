@@ -7,77 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- **`dump_status` galt in der Anleitung als dump-gestuetzt — es holt keinen
-  Dump** (P2-Befund von Codex auf PR #56). Der Satz «The remaining tools read a
-  cantonal dump that is fetched on first use» nannte kein einziges Werkzeug und
-  schloss damit `dump_status` ein.
-
-  Das ist nicht bloss ungenau, es kehrt den Zweck des Werkzeugs um:
-  `dump_status` ist der Einstieg, wenn die Quelle ausgefallen scheint, und ruft
-  nur `store.status()` auf. Ein Client, der die Formel las, musste annehmen,
-  auch dieser Aufruf kontaktiere die Quelle — und haette ihn ausgerechnet
-  waehrend einer Stoerung gemieden. Die Anleitung nennt jetzt die sechs
-  dump-gestuetzten Werkzeuge einzeln und nimmt `dump_status` ausdruecklich aus.
-
-- **Die BFS-Aufloesung wurde ohne ihre Grenze beschrieben** (P2-Befund von
-  Codex auf PR #56). `_canton_for_municipality` durchsucht nur Dumps, die in
-  diesem Prozess bereits gecacht sind, und faellt dann auf einen Seed zurueck,
-  der genau BFS 261 kennt. Auf kaltem Cache scheitert sie also fuer jede andere
-  Gemeinde, ohne irgendetwas zu laden.
-
-  Der Text sagte «pass `canton` only if that resolution fails» und schickte
-  damit jeden Aufrufer ausserhalb Zuerichs zuerst in einen garantiert
-  vergeblichen Aufruf. Die Grenze steht jetzt dort, und die Empfehlung lautet,
-  einen bekannten Kanton gleich mitzugeben.
-
-- **Die Kanton-Regel in `instructions` stimmte fuer drei von sechs Werkzeugen**
-  (P2-Befund von Codex auf PR #55). Der Text fasste fuenf Werkzeuge als «die
-  statistischen Tools» zusammen und gab eine Regel dazu: «pass `canton`
-  explicitly when a BFS number cannot be resolved».
-
-  `lookup_dwellings`, `buildings_in_bbox` und `explain_code` loesen aber gar
-  nichts auf — sie tragen `canton: str = "zh"`. Wer der Regel folgte und
-  `canton` wegliess, befragte fuer einen EGID aus einem anderen Kanton den
-  Zuercher Dump. Der antwortet nicht mit einem Fehler, sondern mit nichts:
-  dieselbe Klasse stiller Fehlbefund, gegen die `dump_status` ueberhaupt
-  existiert. Codex nannte zwei der drei Faelle; `explain_code` ist der dritte
-  derselben Klasse und beim Nachmessen dazugekommen.
-
-  Die Anleitung trennt jetzt beide Gruppen und nennt die Folge, nicht nur die
-  Anweisung — eine Regel ohne Folge wird unter Kontextdruck wegoptimiert.
-
-- **`tests/test_instructions.py`: die Anleitung gegen die Werkzeuge geprueft.**
-  Prosa verrottet geraeuschlos, und ein Werkzeug, das spaeter mit
-  `canton: str = "zh"` dazukommt, wuerde die korrigierte Anleitung wieder
-  falsch machen, ohne dass es jemand merkt.
-
-  Die beiden Gruppen stehen deshalb **nicht** im Test, sondern werden aus dem
-  Werkzeug-Schema abgeleitet, das der Client sieht: `default: "zh"` heisst
-  keine Aufloesung, `default: null` heisst Aufloesung aus der BFS-Nummer. Eine
-  Liste im Test waere eine zweite Kopie, die mit derselben Berechtigung driftet
-  wie der Prosatext, den sie sichern soll.
-
-  Nach den beiden Befunden oben deckt das Gate auch die dump-gestuetzte Menge
-  ab — abgeleitet per `ast` aus dem Quelltext: ein Werkzeug gilt als
-  dump-gestuetzt, wenn sein Rumpf `ensure_dump` aufruft. Ueber `ast` und nicht
-  ueber `inspect.getsource`, weil das, was der `@mcp.tool`-Dekorator
-  zurueckgibt, Sache des SDK ist und sich mit einem Bump aendern kann; der
-  Quelltext kann das nicht.
-
-  Gegenprobe, jede Sonde einzeln:
-
-  | Sonde | fallende Tests |
-  |---|---|
-  | alter Kanton-Text | alle 6 der ersten Fassung |
-  | «The remaining tools» zurueck | die beiden Dump-Zusicherungen |
-  | `dump_status` als dump-gestuetzt genannt | `..._kein_dumploses_werkzeug_...` |
-  | Grenze der Aufloesung weggelassen | `..._die_aufloesung_nennt_ihre_grenze` |
-  | neues Werkzeug mit `canton: str = "zh"`, ungenannt | genau eine |
-  | neues Werkzeug mit `ensure_dump`, ungenannt | zwei |
+## [0.2.0] - 2026-09-19
 
 ### Added
+
+- **Die naechtliche Live-Suite prueft beide Quellen.** Bis zum 18.9.2026 tat
+  sie das nicht: zwei Tests gegen `api3.geo.admin.ch`, keiner gegen
+  `public.madd.bfs.admin.ch` — und ausgerechnet den Dump nannte der Issue-Text
+  des Waechters, waehrend er die gepruefte Quelle nicht erwaehnte. Ein roter
+  Lauf haette auf die falsche Quelle gezeigt, und eine Drift am Dump waere gar
+  nicht aufgefallen. Genau die vom 3.8.2026 sass dort.
+
+  Der Dump wird per `HEAD` geprueft, nicht geladen — der Zuercher Dump wiegt
+  116 MiB. Das ist eine Erreichbarkeits- und Frischewache, **keine
+  Schemawache**: die Kopfzeilen-Drift von innen faengt sie nicht, dafuer
+  braeuchte es Download und Entpacken. Das steht im Docstring, damit niemand
+  den gruenen Haken fuer mehr haelt, als er ist.
+
+  Zwei Zahlen darin sind gemessen und nicht geschaetzt. Die Frische-Schwelle
+  ist **72 h, nicht 24 h**: Der Cron laeuft 35 Minuten *vor* der taeglichen
+  Aktualisierung der Quelle, der neueste Dump ist zur Testzeit also schon
+  23,4 h alt — eine 24-h-Schwelle waere fast jede Nacht rot, ohne dass etwas
+  driftet. Und ein fehlender Pfad antwortet mit **403, nicht 404**, weil die
+  Quelle ein S3-artiger Bucket ist; wird der Test so rot, heisst das «Pfad
+  weg» und nicht «gesperrt».
+
+- **`tests/test_waechter_benennung.py`: der Waechter heisst in der CI und in
+  der Anleitung gleich.** Das Issue-Praefix in `ci.yml` ist die Dedup-Kupplung
+  — ein zweiter roter Lauf erkennt das offene Issue am Titelanfang und haengt
+  sich an. Beim Umbenennen des Praefixes blieben beide `CONTRIBUTING`-Dateien
+  stehen und nannten weiter die alte, falsch herausgegriffene Quelle; wer
+  danach suchte, fand nichts und hielt das fuer «kein Issue offen».
+
+  Das Gate liest das Praefix aus `ci.yml` und haelt beide Anleitungen dagegen,
+  mit Positivkontrolle (der Leser muss ueberhaupt etwas finden — sonst waere
+  das Gate gruen und wertlos, sobald jemand die Zuweisung umformuliert) und
+  einem Test fuer die Gegenrichtung: kein veralteter Titel *neben* dem
+  geltenden. Das ist die wahrscheinlichere Haelfte des Fehlers beim Umbenennen
+  — ein Vorkommen nachziehen, das zweite vergessen.
 
 - **Spec `2026-07-28` nativ: Identitaet auf der modernen Aera, und beide Aeren
   gemessen.** Die moderne Aera kennt keinen `initialize`-Handshake — eine
@@ -152,7 +119,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   dagegen — im Portfolio sind EN und DE desselben Repos schon dreimal
   auseinandergelaufen, weil nur eine Fassung nachgezogen wurde.
 
-### Added
 
 - **Die Pruefsummen im Fixture-Nachweis waren Zierde.** `PROVENANCE.md` fuehrt
   je Datei einen SHA-256 — um genau einen Fall zu fangen: eine Aufzeichnung,
@@ -184,7 +150,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Zusammenhangs-Test faellt; EGID bei geo.admin geaendert -> der
   Quellen-Abgleich faellt.
 
+- Portfolio-standard repository files, aligning the repo with the sibling
+  `*-mcp` servers: `.github/workflows/ci.yml` (test/lint/live) and `publish.yml`
+  (OIDC PyPI + MCP Registry, tag-guarded version derivation),
+  `CONTRIBUTING.md`/`.de.md`, `SECURITY.md`/`.de.md`, `EXAMPLES.md`, and
+  `server.json` (MCP Registry manifest)
+
 ### Changed
+
+- **Das ruff-Pin-Gate deckt jetzt auch die Projektanweisung ab.**
+  `test_werkzeug_versionen.py` hielt `pyproject.toml` und die Workflows
+  auseinander; `CLAUDE.md` stand ausserhalb beider und trug den Satz «genau
+  eine Quelle» samt einer Zahl, die ein Dependabot-Bump nicht nachzieht. Wer
+  die Zahl von dort nahm, installierte die alte Version und bekam
+  Formatabweichungen, die niemand verursacht hat.
+
+  Verboten ist nur die Pin-**Form**; eine erzaehlte Zahl beschreibt
+  Vergangenes und bleibt erlaubt. Eine Gleichheitspruefung waere schlechter
+  gewesen: Sie faerbte jeden kuenftigen Bump rot, und Dependabot kann
+  `CLAUDE.md` nicht mitziehen — das Verbot entkoppelt, statt zu koppeln.
+
+  Der Ausdruck war in der ersten Fassung nach beiden Seiten falsch: Er
+  uebersah `Ruff==X.Y.Z` und `ruff == X.Y.Z` und traf dafuer `pyruff==0.1.0`
+  und `my-ruff==0.1.0`. Die zweite Haelfte ist die gefaehrlichere — ein Gate,
+  das fremde Pakete rot faerbt, wird abgeschaltet, lange bevor jemand
+  nachsieht, warum. Jetzt mit Wortgrenze, ohne Ruecksicht auf
+  Gross-/Kleinschreibung und mit Leerraum um `==`, samt parametrisierter
+  Gegenprobe ueber beide Richtungen.
 
 - **Der Backoff-Schlaf wird ueber einen Modul-Alias gepatcht, nicht ueber
   `asyncio.sleep`.** Die Tests nullten die Wartezeit mit
@@ -197,7 +189,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   wurde nur ein Vielfaches langsamer, und eine laengere Laufzeit ist kein
   Signal, das jemand liest.
 
+- `pyproject.toml` aligned to portfolio standards: `requires-python >=3.11`,
+  `mcp[cli]` upper-bounded (`<2.0.0`), `testpaths`, and a `Changelog` project URL
+- `ruff format` applied to `src/` (formatting only, no behaviour change)
+
 ### Fixed
+
+- **`dump_status` galt in der Anleitung als dump-gestuetzt — es holt keinen
+  Dump** (P2-Befund von Codex auf PR #56). Der Satz «The remaining tools read a
+  cantonal dump that is fetched on first use» nannte kein einziges Werkzeug und
+  schloss damit `dump_status` ein.
+
+  Das ist nicht bloss ungenau, es kehrt den Zweck des Werkzeugs um:
+  `dump_status` ist der Einstieg, wenn die Quelle ausgefallen scheint, und ruft
+  nur `store.status()` auf. Ein Client, der die Formel las, musste annehmen,
+  auch dieser Aufruf kontaktiere die Quelle — und haette ihn ausgerechnet
+  waehrend einer Stoerung gemieden. Die Anleitung nennt jetzt die sechs
+  dump-gestuetzten Werkzeuge einzeln und nimmt `dump_status` ausdruecklich aus.
+
+- **Die BFS-Aufloesung wurde ohne ihre Grenze beschrieben** (P2-Befund von
+  Codex auf PR #56). `_canton_for_municipality` durchsucht nur Dumps, die
+  bereits gecacht sind, und faellt dann auf einen Seed zurueck, der genau
+  BFS 261 kennt. Bei leerem Cache-Verzeichnis scheitert sie also fuer jede
+  andere Gemeinde, ohne irgendetwas zu laden.
+
+  Der Text sagte «pass `canton` only if that resolution fails» und schickte
+  damit jeden Aufrufer ausserhalb Zuerichs zuerst in einen garantiert
+  vergeblichen Aufruf. Die Grenze steht jetzt dort, und die Empfehlung lautet,
+  einen bekannten Kanton gleich mitzugeben.
+
+- **Derselbe Absatz nannte den Cache dann «in this process» — auch das war
+  falsch** (P2-Befund von Codex auf PR #56, nachgereicht). Der Cache ist ein
+  Verzeichnis: `GwrStore.status()` prueft `path.exists()`, und
+  `_canton_for_municipality` laeuft genau ueber dessen Ergebnis. Ein Dump, den
+  ein frueherer Lauf geholt hat, zaehlt nach einem Neustart weiter als gecacht.
+
+  Die Folge ist dieselbe Klasse wie bei den drei Befunden davor, nur in die
+  andere Richtung: Der Text beschrieb eine Faehigkeit **enger**, als sie ist,
+  und ein Client mit bloss einer BFS-Nummer schloss daraus, eine Abfrage sei
+  aussichtslos, die durchgelaufen waere. Die Anleitung nennt jetzt die Platte
+  und sagt ausdruecklich, dass der Cache einen Neustart ueberlebt.
+
+  Der Eintrag darueber trug den Fehler bis zu diesem Release mit sich: Er
+  beschrieb die Behebung des einen Befundes in den Worten des naechsten.
+
+- **Die Kanton-Regel in `instructions` stimmte fuer drei von sechs Werkzeugen**
+  (P2-Befund von Codex auf PR #55). Der Text fasste fuenf Werkzeuge als «die
+  statistischen Tools» zusammen und gab eine Regel dazu: «pass `canton`
+  explicitly when a BFS number cannot be resolved».
+
+  `lookup_dwellings`, `buildings_in_bbox` und `explain_code` loesen aber gar
+  nichts auf — sie tragen `canton: str = "zh"`. Wer der Regel folgte und
+  `canton` wegliess, befragte fuer einen EGID aus einem anderen Kanton den
+  Zuercher Dump. Der antwortet nicht mit einem Fehler, sondern mit nichts:
+  dieselbe Klasse stiller Fehlbefund, gegen die `dump_status` ueberhaupt
+  existiert. Codex nannte zwei der drei Faelle; `explain_code` ist der dritte
+  derselben Klasse und beim Nachmessen dazugekommen.
+
+  Die Anleitung trennt jetzt beide Gruppen und nennt die Folge, nicht nur die
+  Anweisung — eine Regel ohne Folge wird unter Kontextdruck wegoptimiert.
+
+- **`tests/test_instructions.py`: die Anleitung gegen die Werkzeuge geprueft.**
+  Prosa verrottet geraeuschlos, und ein Werkzeug, das spaeter mit
+  `canton: str = "zh"` dazukommt, wuerde die korrigierte Anleitung wieder
+  falsch machen, ohne dass es jemand merkt.
+
+  Die beiden Gruppen stehen deshalb **nicht** im Test, sondern werden aus dem
+  Werkzeug-Schema abgeleitet, das der Client sieht: `default: "zh"` heisst
+  keine Aufloesung, `default: null` heisst Aufloesung aus der BFS-Nummer. Eine
+  Liste im Test waere eine zweite Kopie, die mit derselben Berechtigung driftet
+  wie der Prosatext, den sie sichern soll.
+
+  Nach den beiden Befunden oben deckt das Gate auch die dump-gestuetzte Menge
+  ab — abgeleitet per `ast` aus dem Quelltext: ein Werkzeug gilt als
+  dump-gestuetzt, wenn sein Rumpf `ensure_dump` aufruft. Ueber `ast` und nicht
+  ueber `inspect.getsource`, weil das, was der `@mcp.tool`-Dekorator
+  zurueckgibt, Sache des SDK ist und sich mit einem Bump aendern kann; der
+  Quelltext kann das nicht.
+
+  Gegenprobe, jede Sonde einzeln:
+
+  | Sonde | fallende Tests |
+  |---|---|
+  | alter Kanton-Text | alle 6 der ersten Fassung |
+  | «The remaining tools» zurueck | die beiden Dump-Zusicherungen |
+  | `dump_status` als dump-gestuetzt genannt | `..._kein_dumploses_werkzeug_...` |
+  | Grenze der Aufloesung weggelassen | `..._die_aufloesung_nennt_ihre_grenze` |
+  | neues Werkzeug mit `canton: str = "zh"`, ungenannt | genau eine |
+  | neues Werkzeug mit `ensure_dump`, ungenannt | zwei |
+
 - **`fetch_with_retry` had six defects, all inherited from the shared
   template.** `gwr.py` copied the `mcp-data-source-probe` reference retry, and
   the template shipped these until 2026-08-07. A sweep across eleven servers
@@ -257,21 +337,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   first release and need no version bump.
 
 ### Security
+
 - **SEC-016 (0.0.0.0 binding / NeighborJack):** the HTTP transports defaulted
   `HOST` to `0.0.0.0`, binding all interfaces. Now default to `127.0.0.1`;
   exposing all interfaces requires an explicit `HOST=0.0.0.0`.
-
-### Added
-- Portfolio-standard repository files, aligning the repo with the sibling
-  `*-mcp` servers: `.github/workflows/ci.yml` (test/lint/live) and `publish.yml`
-  (OIDC PyPI + MCP Registry, tag-guarded version derivation),
-  `CONTRIBUTING.md`/`.de.md`, `SECURITY.md`/`.de.md`, `EXAMPLES.md`, and
-  `server.json` (MCP Registry manifest)
-
-### Changed
-- `pyproject.toml` aligned to portfolio standards: `requires-python >=3.11`,
-  `mcp[cli]` upper-bounded (`<2.0.0`), `testpaths`, and a `Changelog` project URL
-- `ruff format` applied to `src/` (formatting only, no behaviour change)
 
 ## [0.1.0] - 2026-07-24
 
