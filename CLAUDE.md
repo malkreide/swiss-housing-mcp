@@ -855,6 +855,34 @@ Versions-Sync) fährt die Matrix 3.11/3.12/3.13, `lint` (die zwei ruff-Gates)
 läuft ohne Matrix auf 3.11. Ein grünes 3.12/3.13 sagt über ruff nichts aus.
 `test` setzt kein `fail-fast: false`.
 
+**Actions hängen an Commits, nicht an Namen.** Beide Workflows pinnen jedes
+`uses:` auf einen 40-stelligen SHA mit Versionskommentar; `test_workflow_pins.py`
+hält das fest. `@v7` ist kein Zustand, sondern ein Zeiger — wer das Tag drüben
+verschiebt, ändert damit, was hier läuft, ohne Commit, ohne Review, ohne rotes
+Gate. In `ci.yml` hängt daran ein Schritt mit `issues: write`, in `publish.yml`
+der Weg des PyPI-Tokens.
+
+**Beim Auflösen eines Tags `^{}` mitabfragen.** Ist das Tag *annotiert*, nennt
+`git ls-remote <url> refs/tags/<tag>` das **Tag-Objekt** und nicht den Commit;
+erst `refs/tags/<tag>^{}` gibt den Commit, und nur dann kommt überhaupt eine
+zweite Zeile. Zweimal getroffen: `pypa/gh-action-pypi-publish` v1.14.2
+(Tag `a892a5a6…`, Commit `dc37677b…`) und `actions/github-script` v9.0.0
+(Tag `d746ffe3…`, Commit `3a2844b7…`). Beide Male fiel es vor dem Commit auf,
+beide Male nur, weil danach gesucht wurde. `actions/checkout` und
+`actions/setup-python` sind leichtgewichtig getaggt und liefern gar keine
+zweite Zeile — wer nur die kennt, hält die Abfrage für überflüssig.
+
+Das Gate fängt diesen Fall **nicht**: Ein Tag-Objekt ist ebenfalls 40 Stellen
+hex und liest sich als gültiger Pin. Rot würde erst der Lauf in GitHub Actions,
+und auch das nur an dem Job, der die Action benutzt — bei `github-script` also
+erst in der nächsten roten Nacht. Der Test sagt das in seinem Docstring, statt
+die Lücke wegzuschweigen.
+
+Dass hier trotzdem nichts brach, ist kein Verdienst des Pinnens: Alle drei
+`v`-Major-Refs zeigten am 20.9.2026 auf genau die Commits der neuesten
+Patch-Tags, das Pinnen fror also den Ist-Zustand ein und änderte kein Verhalten.
+Ein Pin, der etwas ändert, ist ein Downgrade und gehört gesondert geprüft.
+
 **Live-Tests:** eigener Job in `ci.yml`, nächtlich per Cron (`29 3 * * *`),
 auf PRs per `if:` übersprungen. Der Lauf wird eingeordnet statt am Exit-Code
 gemessen; ein Befund öffnet oder schliesst ein Issue. DRIFT-005 ist erfüllt.
