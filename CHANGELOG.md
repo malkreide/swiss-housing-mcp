@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Jede Action in beiden Workflows haengt an einem Commit statt an einem
+  Tag.** `@v7` ist kein Zustand, sondern ein Zeiger: Wer das Tag drueben
+  verschiebt, aendert damit, was hier laeuft — ohne Commit in diesem Repo, ohne
+  Review, ohne dass ein Gate rot wird. In `ci.yml` hing daran ein Schritt mit
+  `issues: write`, in `publish.yml` der Weg, ueber den das PyPI-Token laeuft.
+  `publish.yml` wurde beim Release-Gate gepinnt, `ci.yml` jetzt nachgezogen.
+  Alle drei Major-Refs zeigten dabei auf genau die Commits der neuesten
+  Patch-Tags — das Pinnen fror den Ist-Zustand ein und aenderte kein Verhalten.
+
+### Added
+
+- **`test_workflow_pins.py` haelt die Pins fest.** Ohne Gate ist der Rueckfall
+  still und wahrscheinlich: `@v7` liest sich richtig, ist kuerzer und steht in
+  jedem Beispiel im Netz. Geprueft wird beides — 40-stelliger SHA und
+  Versionskommentar —, mit Positivkontrolle gegen einen blind gewordenen
+  Ausdruck und einer Gegenprobe ueber sieben Zeilenformen.
+
 ## [0.2.0] - 2026-09-19
 
 ### Added
