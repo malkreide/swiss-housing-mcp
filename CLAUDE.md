@@ -494,8 +494,35 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   der im Ergebnis steckt: Der Draft-Pfad kam hier gar nicht zum Reden über ein
   Kontingent, weil ihn vorher die Environment stoppte. Die ursprüngliche Frage
   — schweigt ein Draft bei freiem Kontingent, oder bekommt er die kurze
-  Fassung? — bleibt deshalb offen. Sie liesse sich erst in einem Repo
-  beantworten, in dem auch der Draft-Pfad eine Environment hat.
+  Fassung? — blieb deshalb offen.
+
+  **Am 20.9.2026 ist sie beantwortet, und die Antwort ist: Schweigen.** PR #69
+  dieses Repos lag von 09:34:19 bis 10:20:01 als Draft, **2742 Sekunden**, und
+  bekam nichts — kein Kontingent-, kein Environment-Kommentar. Dass das
+  Kontingent frei war, ist diesmal nicht geschlossen, sondern gemessen: 8,6
+  Sekunden nach dem Ready lief der Review-Pfad an und kam durch.
+
+  | Draft | angelegt | Ausgang |
+  |---|---|---|
+  | #69 | 09:34:19 | still bis zum Ready (2742 s) |
+
+  Diese Zeile gehört bewusst **nicht** in die Sechser-Tabelle weiter oben. Die
+  misst Drafts unter Sperre und trägt die Episodenhypothese; diese eine misst
+  freies Kontingent und sagt über Episoden nichts, weil es dort gar keine gibt.
+  Wer sie unten anhängt, hat aus zwei Messreihen eine gemacht.
+
+  Das ist zugleich eine Zustandsänderung gegenüber #65 zwei Tage zuvor:
+  gleiches Repo, gleicher gemessener Zustand des Review-Pfads, aber dort nach
+  15 Sekunden die Environment-Meldung, hier 45 Minuten Stille. Irgendetwas ist
+  dazwischen anders geworden, am nächstliegenden eine inzwischen angelegte
+  Environment für den Draft-Pfad. Das ist eine Vermutung — nachgesehen hat
+  niemand, und die Meldung selbst kann es nicht mehr sagen, weil sie
+  ausbleibt.
+
+  Die Zeile «Ein stiller Draft belegt gar nichts» gilt damit unverändert, aber
+  aus einem Grund mehr: Sie hiess bisher «frei oder gesperrt-und-schon-
+  gemeldet». Jetzt kommt «Environment vorhanden» als dritte Lesart dazu, und
+  alle drei sehen gleich aus.
 - **Das Kontingent ist weg** — dann schreibt er die Meldung oben.
 - **Für das Repo fehlt eine Environment** — dann schreibt er:
 
@@ -555,6 +582,19 @@ am 18.9.2026 die 👀: Während der Lauf auf PR #55 dieses Repos lief, trug der
 **PR** `reactions.total_count: 1` mit `eyes: 1`, der Kommentar keine. Das stützt
 die 👀-Hälfte des Infokastens für diesen Lauf und bestätigt nebenbei, dass beide
 Reaktionen am PR sitzen — am Urheber ändert es nichts.
+
+Am 20.9.2026 ist auf PR #69 zum ersten Mal die **Umschaltung** an einem
+einzigen PR gemessen worden, mit zwei Abfragezeitpunkten: um 10:20:21 trug der
+PR `eyes: 1` und `+1: 0`, nach dem `Completed` um 10:21:09 dann `eyes: 0` und
+`+1: 1`. Der Kommentar trug in beiden Abfragen keine.
+
+Den Vorbehalt räumt auch das **nicht** aus: Ein Zähler nennt keinen Urheber,
+und zwei Zähler nennen auch keinen. Was es ändert, ist die Art der Evidenz —
+bisher standen Standbilder da, die zu einem Lauf passten; jetzt steht eine
+Änderung da, die mit Anfang und Ende des Laufs zusammenfällt. Für «die
+Reaktion gehört zum Lauf» ist das deutlich mehr. Für «sie stammt von Codex»
+ist es weiterhin nichts, denn dazu bräuchte es die Abfrage, die die
+Reagierenden auflistet, und die ist nach wie vor nicht gemacht.
 
 Der zweite ist **erledigt, und die Antwort lautet ja: Codex setzt auf einem
 gemergten PR einen Befund ab.** Am 18.9.2026 wurde PR #55 um 06:09:24 gemergt,
@@ -665,11 +705,12 @@ ging dabei nichts, aber nur, weil das Kontingent ohnehin gesperrt war und gar
 kein Lauf zu verpassen war. Bei freiem Kontingent wäre es der Fall, den dieser
 Absatz beschreibt.
 
-Wie viel Zeit, ist inzwischen sechsmal gemessen, und die Spanne ist weit:
+Wie viel Zeit, ist inzwischen siebenmal gemessen, und die Spanne ist weit:
 
 | Datum | PR | `Running` → `Completed` | Dauer |
 |---|---|---|---|
 | 19.9.2026 | #66 | 17:11:01 → 17:12:00 | 59 s |
+| 20.9.2026 | #69 | 10:20:09.590 → 10:21:09.590 | 60,0 s |
 | 29.8.2026 | #42 | 09:00:08 → 09:01:09 | 62 s |
 | 18.9.2026 | #65 | 15:41:53 → 15:43:09 | 76 s |
 | 29.8.2026 | #41 | 08:52:22 → 08:53:40 | 78 s |
@@ -685,10 +726,20 @@ Fälle falsch — am 18.9. wäre das zweimal passiert.
 Die zwei Messungen vom 18./19.9. haben die Untergrenze weiter gedrückt, von 62
 auf **59 Sekunden**. Das ändert den Rat nicht, illustriert aber, wohin solche
 Reihen wandern: Jede neue Messung hat die Spanne bisher gedehnt und nie
-eingeengt. Wer aus sechs Werten eine Ober- oder Untergrenze macht, hat die
+eingeengt. Wer aus sieben Werten eine Ober- oder Untergrenze macht, hat die
 Stichprobe für die Verteilung gehalten.
 
-Sechs Messungen sind immer noch keine Verteilung. Die 254 taugen so wenig als
+Die siebte Messung (#69, 20.9.) ist die erste, die das **nicht** tut: 60,0 s
+liegt mitten im Feld und rührt weder an die 59 noch an die 254. Das ist kein
+Gegenbeleg zum Absatz darüber, sondern das, was eine Stichprobe normalerweise
+macht — auffällig war die Serie davor, nicht dieser Wert.
+
+Was die siebte Messung ändert, ist die Bilanz des Ein-Minuten-Rats: Von sieben
+Läufen liegen nur zwei bei oder unter einer Minute (59 s und 60,0 s), fünf
+darüber, zwei davon über zwei Minuten. Wer nach einer Minute auf «hängt»
+schliesst, läge in fünf von sieben gemessenen Fällen falsch.
+
+Sieben Messungen sind immer noch keine Verteilung. Die 254 taugen so wenig als
 Obergrenze, wie es die 78 taten; der Satz galt schon damals und gilt weiter.
 
 Beide Male lag der Merge davor — `closed_at` 08:52:19 und 09:00:06 —, der Lauf
@@ -706,10 +757,18 @@ Am 18.9.2026 verhielt es sich auch so. Auf PR #56 dieses Repos folgte dem
 geprüften Commit `881b704` der Fix-Commit `890b79c`; danach nannte die
 Statustabelle weiterhin `881b704`, und es erschien weder eine neue Zeile noch
 ein neuer Kommentar. Dass die Abwesenheit etwas heisst, hängt an einer zweiten
-Messung: Die Statustabelle erscheint **7 bis 11 Sekunden** nach dem Auslöser
+Messung: Die Statustabelle erscheint **7 bis 12 Sekunden** nach dem Auslöser
 (#55 ready 06:08:12 → Tabelle 06:08:23; #56 ready 06:33:43 → Tabelle 06:33:52;
-#65 ready 15:41:48 → Tabelle 15:41:55; #66 ready 17:10:56 → Tabelle 17:11:03).
-Nach über fünfzig Sekunden ohne Regung ist also nicht bloss noch nichts da.
+#65 ready 15:41:48 → Tabelle 15:41:55; #66 ready 17:10:56 → Tabelle 17:11:03;
+#69 ready 10:20:01 → Tabelle 10:20:13). Nach über fünfzig Sekunden ohne Regung
+ist also nicht bloss noch nichts da.
+
+Die Obergrenze stand hier bis zum 20.9.2026 bei 11 s und ist mit #69 auf 12 s
+gerutscht — dieselbe Bewegung wie bei der Laufzeittabelle, wo jede neue Messung
+die Spanne gedehnt und nie eingeengt hat. Die «über fünfzig Sekunden» sind
+deshalb mit Abstand zur grössten Messung gewählt und nicht knapp daneben; wer
+die Schranke jeweils auf den letzten beobachteten Wert nachzieht, baut sich
+einen Fehlalarm für die nächste Messung.
 
 Die zwei 7er tragen denselben Vorbehalt wie die Untergrenze der Sperrmeldung
 weiter oben: Sie messen gegen den Zeitpunkt des Ready-**Ereignisses aus dem
