@@ -463,6 +463,39 @@ und der zweite davon, der letzte in der Liste, sieht aus wie ein Ausfall:
   06:41 leer waren, die Fassungen sich danach aber weiter unterschieden. Wer die
   Frage schliessen will, braucht denselben Vergleich bei **freiem** Kontingent —
   dann zeigt sich, ob der Draft schweigt oder etwas anderes bekommt.
+
+  Dieser Vergleich fiel am 18.9.2026 um 15:35 an, und die Antwort lautet:
+  etwas anderes. Das Kontingent war frei — zwischen 15:23 und 15:26 liefen
+  sieben Reviews auf diesem Repo durch, mit Review-Objekten und Befunden. Der
+  Draft #65, angelegt um 15:35:31, bekam 15 Sekunden später:
+
+  ```
+  To use Codex here, create an environment for this repo.
+  ```
+
+  Und um 15:41:53, nach dem Ready, lief auf **demselben PR** ein gewöhnlicher
+  Review an.
+
+  Unter der Annahme eines einzigen Pfades ist das ein Widerspruch: Entweder
+  existiert für dieses Repo eine Environment oder nicht, und acht Läufe in
+  achtzehn Minuten belegen, dass sie existiert. Unter zwei Pfaden passt es
+  genau — dem Draft-Pfad fehlt für dieses Repo eine eigene Environment, und
+  seine Meldung wurde erst sichtbar, als sein Kontingent frei war. Das ist die
+  Reihenfolge, die der Abschnitt weiter unten beschreibt: Die Environment-
+  Prüfung liegt hinter der Kontingent-Prüfung und kommt erst zum Vorschein,
+  wenn die davor wegfällt.
+
+  **Das ist die stärkste Evidenz für zwei Pfade, die dieser Abschnitt hat** —
+  stärker als jede Wortlaut-Beobachtung. Ein Wortlaut kann eine
+  Formulierungsvariante desselben Dienstes sein; ein unterschiedlicher
+  *Konfigurationszustand* kann es nicht.
+
+  Geschlossen ist die Frage damit trotzdem nicht, und zwar aus einem Grund,
+  der im Ergebnis steckt: Der Draft-Pfad kam hier gar nicht zum Reden über ein
+  Kontingent, weil ihn vorher die Environment stoppte. Die ursprüngliche Frage
+  — schweigt ein Draft bei freiem Kontingent, oder bekommt er die kurze
+  Fassung? — bleibt deshalb offen. Sie liesse sich erst in einem Repo
+  beantworten, in dem auch der Draft-Pfad eine Environment hat.
 - **Das Kontingent ist weg** — dann schreibt er die Meldung oben.
 - **Für das Repo fehlt eine Environment** — dann schreibt er:
 
@@ -529,11 +562,29 @@ während der um 06:08:19 gestartete Lauf noch lief; um 06:12:31 stand das
 Review-Objekt da, mit einem P2-Befund, der zutraf. Der Merge hat den Lauf also
 weder abgebrochen noch seinen Befund verschluckt.
 
-Was damit **nicht** geprüft ist: ein Lauf, der erst *nach* dem Merge ausgelöst
-wird. Der Versuch am selben Tag — `@codex review` auf dem bereits gemergten
-PR #56 — endete um 06:41:08 in der Kontingent-Meldung und hat die Frage deshalb
-nicht beantwortet. Gemessen ist ein Lauf, der den Merge überdauert, nicht einer,
-der ihm folgt.
+Die zweite Hälfte davon — **ein Lauf, der erst *nach* dem Merge ausgelöst
+wird** — blieb zunächst offen: Der Versuch am selben Tag, `@codex review` auf
+dem bereits gemergten PR #56, endete um 06:41:08 in der Kontingent-Meldung.
+Nachgeholt um 15:21, als das Kontingent zurück war, und die Antwort lautet
+**ja, und er prüft etwas anderes als erwartet**.
+
+Derselbe PR liefert die Kontrolle gleich mit, weil er zweimal geprüft wurde:
+
+| #56 geprüft am | genannter Commit | Eltern | Zustand des PR |
+|---|---|---|---|
+| 06:36:17 | `881b704` | 1 | offen |
+| 15:23:45 | `5b51a9f` | **2** | gemergt |
+
+Zwei Eltern heisst Merge-Commit. Der Lauf auf dem gemergten PR prüft also
+nicht den PR-Head, sondern den **Merge-Commit** — und der enthält `890b79c`,
+genau den Fix-Commit, den die Push-Lücke weiter unten ungeprüft gelassen hatte
+(`merge-base --is-ancestor` bestätigt es).
+
+Das ist mehr als eine Kuriosität: **Die Push-Lücke ist nachträglich
+schliessbar.** Wer nach dem Fix-Push nicht mehr dazu kam, einen Review
+auszulösen, holt ihn auf dem gemergten PR nach und deckt damit die Commits ab,
+die der Push hinzugefügt hat. Vorher stand hier, das sei ungemessen; es ist
+jetzt gemessen, und zwar an dem PR, an dem die Lücke aufgefallen war.
 
 Bis dahin gilt: Eine `Completed`-Zeile belegt, dass ein Lauf stattfand — nicht,
 dass er nichts gefunden hat. Wer sie als Freigabe liest, hat die Frage, die
@@ -614,22 +665,30 @@ ging dabei nichts, aber nur, weil das Kontingent ohnehin gesperrt war und gar
 kein Lauf zu verpassen war. Bei freiem Kontingent wäre es der Fall, den dieser
 Absatz beschreibt.
 
-Wie viel Zeit, ist inzwischen viermal gemessen, und die Spanne ist weit:
+Wie viel Zeit, ist inzwischen sechsmal gemessen, und die Spanne ist weit:
 
 | Datum | PR | `Running` → `Completed` | Dauer |
 |---|---|---|---|
+| 19.9.2026 | #66 | 17:11:01 → 17:12:00 | 59 s |
 | 29.8.2026 | #42 | 09:00:08 → 09:01:09 | 62 s |
+| 18.9.2026 | #65 | 15:41:53 → 15:43:09 | 76 s |
 | 29.8.2026 | #41 | 08:52:22 → 08:53:40 | 78 s |
 | 18.9.2026 | #56 | 06:33:49 → 06:36:19 | 150 s |
 | 18.9.2026 | #55 | 06:08:19 → 06:12:33 | 254 s |
 
 Hier stand «wer wartet, sollte mit gut einer Minute rechnen». Nach zwei
-Messungen war das vertretbar, nach vier ist es zu eng: Der längste Lauf dauerte
+Messungen war das vertretbar, nach vier war es zu eng: Der längste Lauf dauerte
 das Vierfache des kürzesten, und zwei der vier lagen über zwei Minuten. Wer
 nach einer Minute auf «hängt» schliesst, liegt in der Hälfte der gemessenen
 Fälle falsch — am 18.9. wäre das zweimal passiert.
 
-Vier Messungen sind immer noch keine Verteilung. Die 254 taugen so wenig als
+Die zwei Messungen vom 18./19.9. haben die Untergrenze weiter gedrückt, von 62
+auf **59 Sekunden**. Das ändert den Rat nicht, illustriert aber, wohin solche
+Reihen wandern: Jede neue Messung hat die Spanne bisher gedehnt und nie
+eingeengt. Wer aus sechs Werten eine Ober- oder Untergrenze macht, hat die
+Stichprobe für die Verteilung gehalten.
+
+Sechs Messungen sind immer noch keine Verteilung. Die 254 taugen so wenig als
 Obergrenze, wie es die 78 taten; der Satz galt schon damals und gilt weiter.
 
 Beide Male lag der Merge davor — `closed_at` 08:52:19 und 09:00:06 —, der Lauf
@@ -647,9 +706,16 @@ Am 18.9.2026 verhielt es sich auch so. Auf PR #56 dieses Repos folgte dem
 geprüften Commit `881b704` der Fix-Commit `890b79c`; danach nannte die
 Statustabelle weiterhin `881b704`, und es erschien weder eine neue Zeile noch
 ein neuer Kommentar. Dass die Abwesenheit etwas heisst, hängt an einer zweiten
-Messung: Die Statustabelle erscheint **9 bis 11 Sekunden** nach dem Auslöser
-(#55 ready 06:08:12 → Tabelle 06:08:23; #56 ready 06:33:43 → Tabelle 06:33:52).
+Messung: Die Statustabelle erscheint **7 bis 11 Sekunden** nach dem Auslöser
+(#55 ready 06:08:12 → Tabelle 06:08:23; #56 ready 06:33:43 → Tabelle 06:33:52;
+#65 ready 15:41:48 → Tabelle 15:41:55; #66 ready 17:10:56 → Tabelle 17:11:03).
 Nach über fünfzig Sekunden ohne Regung ist also nicht bloss noch nichts da.
+
+Die zwei 7er tragen denselben Vorbehalt wie die Untergrenze der Sperrmeldung
+weiter oben: Sie messen gegen den Zeitpunkt des Ready-**Ereignisses aus dem
+Webhook**, nicht gegen einen von GitHub abgefragten Zeitstempel. Für die
+Schlussfolgerung spielt das keine Rolle — gebraucht wird die obere Schranke,
+und die stammt aus den beiden genauer gemessenen Werten.
 
 Das ist die gefährlichste der drei Lücken, weil sie genau dann zuschlägt, wenn
 alles richtig gelaufen ist: Codex findet etwas, man behebt es, man pusht — und
