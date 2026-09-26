@@ -42,7 +42,7 @@ dev = [
     # lokaler Lauf und Gate waren sich also ueber die Version uneinig.
     # `test_werkzeug_versionen.py` faellt, wenn hier wieder eine Spanne steht
     # oder ein Workflow eine zweite Version setzt.
-    "ruff==0.16.5",
+    "ruff==0.16.9",
 ]
 
 [project.scripts]
