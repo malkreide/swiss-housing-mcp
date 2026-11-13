@@ -6,7 +6,9 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # Nightly live tests at 03:29 UTC to catch upstream schema drift.
+    # Nightly live tests to catch upstream schema drift. 03:29 UTC is the
+    # earliest start, not the start: GitHub has run this 4 to 8.5 h late
+    # (measured Sep and Nov 2026, see CLAUDE.md).
     - cron: "29 3 * * *"
   workflow_dispatch:
 
