@@ -237,16 +237,24 @@ async def test_live_geocode():
 
 
 # Schwelle fuer die Frische des Dumps. NICHT 24 h, und das ist gemessen:
-# Der Nightly-Cron steht auf `29 3 * * *` (03:29 UTC), die Quelle aktualisiert
-# gegen 04:03 UTC — der Lauf faellt also 35 Minuten VOR die Aktualisierung, und
-# der neueste Dump ist zur Testzeit schon 23.4 h alt. Eine 24-h-Schwelle waere
-# damit fast jede Nacht rot, ohne dass irgendetwas driftet: der Test misst dann
-# den Zeitpunkt seines eigenen Laufs, nicht den Vertrag mit der Quelle.
+# Weder die Startzeit des Laufs noch die Aktualisierungszeit der Quelle steht
+# fest:
+#
+# - Der Nightly-Cron steht auf `29 3 * * *` (03:29 UTC), aber das ist eine
+#   Untergrenze. GitHub startet geplante Laeufe verspaetet: 1.-14.9.2026
+#   zwischen 07:46 und 09:57 UTC, 4.-13.11.2026 zwischen 10:30 und 11:55 UTC.
+# - Die Quelle aktualisierte am 18.9.2026 um 04:03:42 UTC und am 13.11.2026 um
+#   05:03:10 UTC — vermutlich 06:03 Schweizer Ortszeit, aus zwei Messungen
+#   geschlossen.
+#
+# Zur Testzeit ist der Dump also je nach Tag zwischen rund 5 und gut 23 h alt
+# (22.4 bis 23.4 h, falls GitHub einmal puenktlich startet). Eine 24-h-Schwelle
+# hielte dann nur eine halbe bis anderthalb Stunden Luft: der Test maesse den
+# Zeitpunkt seines eigenen Laufs, nicht den Vertrag mit der Quelle.
 #
 # 72 h laesst einen ausgefallenen Tag durch und schlaegt an, wenn die Quelle
-# mehrere Tage steht. Die Zahl stuetzt sich auf EINE Messung des
-# Aktualisierungszeitpunkts (18.9.2026, 04:03:42 UTC); wie stark er schwankt,
-# ist unbekannt. Wer sie enger zieht, sollte das vorher nachmessen.
+# mehrere Tage steht. Wer die Zahl enger zieht, sollte beide Zeiten vorher
+# nachmessen.
 DUMP_MAX_AGE_HOURS = 72
 
 

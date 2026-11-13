@@ -387,10 +387,26 @@ Entpacken.
 
 Zwei Zahlen dabei sind gemessen und nicht geschätzt:
 
-- Die Frische-Schwelle ist **72 h, nicht 24 h**. Der Cron (03:29 UTC) läuft
-  35 Minuten **vor** der täglichen Aktualisierung der Quelle (gemessen 04:03
-  UTC); der neueste Dump ist zur Testzeit also schon 23.4 h alt. Eine
-  24-h-Schwelle wäre fast jede Nacht rot, ohne dass irgendetwas driftet.
+- Die Frische-Schwelle ist **72 h, nicht 24 h** — weil weder die Startzeit
+  des Laufs noch die Aktualisierungszeit der Quelle feststeht:
+  - **Der Cron (03:29 UTC) ist eine Untergrenze, keine Startzeit.** GitHub
+    startet geplante Läufe verspätet: vom 1. bis 14.9.2026 zwischen 07:46 und
+    09:57 UTC, vom 4. bis 13.11.2026 zwischen 10:30 und 11:55 UTC — also 4 bis
+    8.5 h nach dem Cron, keiner pünktlich.
+  - **Die Quelle aktualisiert nicht zu einer festen UTC-Zeit.** Gemessen
+    04:03:42 UTC am 18.9.2026 und 05:03:10 UTC am 13.11.2026. Das passt zu
+    06:03 Schweizer Ortszeit, ist aber aus zwei Messungen geschlossen.
+
+  Zur Testzeit ist der Dump damit je nach Tag zwischen rund 5 und gut 23 h
+  alt: 5.5 bis 7 h bei den Läufen vom November, 22.4 bis 23.4 h, falls GitHub
+  einmal pünktlich startet. Eine 24-h-Schwelle hielte im zweiten Fall nur noch
+  eine halbe bis anderthalb Stunden Luft — der Test mässe dann den Zeitpunkt
+  seines eigenen Laufs, nicht den Vertrag mit der Quelle.
+
+  Hier stand einmal, der Lauf falle «35 Minuten **vor** die Aktualisierung»
+  und der Dump sei zur Testzeit «23.4 h alt». Das war aus der Cron-Zeile
+  gerechnet, nicht an den Läufen gemessen; aufgefallen ist es am 13.11.2026 an
+  den Startzeiten in der Run-Liste.
 - Ein **fehlender Pfad antwortet mit 403, nicht 404** — die Quelle ist ein
   S3-artiger Bucket. Wird der Test so rot, heisst das «Pfad weg», nicht
   «gesperrt»; wer den Status für eine Sperre hält, sucht ein Zugangsproblem,
